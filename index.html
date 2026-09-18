@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>EXPOBIO 2026 · Panel de gestión</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Sora:wght@500;700;800&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/base.css">
+  <link rel="stylesheet" href="css/login.css">
+</head>
+<body class="login-body">
+  <div class="login-card">
+    <img src="https://files.catbox.moe/zftv8w.png" alt="Logo EXPOBIO" class="login-logo">
+    <h1 class="login-titulo">Panel de gestión</h1>
+    <p class="login-sub">EXPOBIO 2026 · Área reservada del comité</p>
+
+    <div id="loginError" class="login-error" hidden></div>
+
+    <form id="loginForm" novalidate>
+      <label class="campo">
+        <span>Usuario</span>
+        <input type="text" id="usuario" autocomplete="username" required>
+      </label>
+      <label class="campo">
+        <span>Contraseña</span>
+        <input type="password" id="clave" autocomplete="current-password" required>
+      </label>
+      <button type="submit" id="btnEntrar" class="btn-primario btn-ancho">Entrar</button>
+    </form>
+
+    <p class="login-pie">Ingresa con tus credenciales de gestor.</p>
+  </div>
+
+  <script src="js/config.js"></script>
+  <script src="js/api.js"></script>
+  <script src="js/auth.js"></script>
+  <script src="js/login.js"></script>
+</body>
+</html>

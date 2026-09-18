@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>EXPOBIO 2026 · Panel</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Sora:wght@500;700;800&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/base.css">
+  <link rel="stylesheet" href="css/panel.css">
+</head>
+<body>
+  <div class="panel-layout">
+    <aside class="panel-lateral">
+      <div class="panel-logo">
+        <img src="https://files.catbox.moe/zftv8w.png" alt="EXPOBIO">
+        <span>EXPOBIO 2026</span>
+      </div>
+
+      <nav class="panel-nav" id="navSecciones">
+        <button class="nav-item activo" data-seccion="resumen">Resumen</button>
+        <button class="nav-item" data-seccion="inscripciones">Inscripciones</button>
+        <button class="nav-item" data-seccion="organizadores">Organizadores</button>
+        <button class="nav-item" data-seccion="precios">Precios</button>
+        <button class="nav-item nav-admin" data-seccion="gestores">Gestores</button>
+      </nav>
+
+      <div class="panel-pie-lateral">
+        <div class="panel-usuario">
+          <span class="panel-usuario-nombre" id="lblUsuario">—</span>
+          <span class="panel-usuario-rol" id="lblRol"></span>
+        </div>
+        <button class="btn-secundario btn-chico" id="btnSalir">Salir</button>
+      </div>
+    </aside>
+
+    <main class="panel-contenido">
+      <div id="seccion-resumen" class="seccion"></div>
+      <div id="seccion-inscripciones" class="seccion oculto"></div>
+      <div id="seccion-organizadores" class="seccion oculto"></div>
+      <div id="seccion-precios" class="seccion oculto"></div>
+      <div id="seccion-gestores" class="seccion oculto"></div>
+    </main>
+  </div>
+
+  <div id="modal" class="modal-fondo oculto"></div>
+
+  <script src="js/config.js"></script>
+  <script src="js/api.js"></script>
+  <script src="js/auth.js"></script>
+  <script src="js/secciones/resumen.js"></script>
+  <script src="js/secciones/inscripciones.js"></script>
+  <script src="js/secciones/organizadores.js"></script>
+  <script src="js/secciones/precios.js"></script>
+  <script src="js/secciones/gestores.js"></script>
+  <script src="js/panel.js"></script>
+</body>
+</html>

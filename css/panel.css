@@ -1,0 +1,105 @@
+.panel-layout { display: flex; min-height: 100vh; }
+
+/* ===== Lateral ===== */
+.panel-lateral {
+  width: 250px;
+  background: var(--verde-oscuro);
+  color: #fff;
+  display: flex;
+  flex-direction: column;
+  position: sticky;
+  top: 0;
+  height: 100vh;
+  flex-shrink: 0;
+}
+
+.panel-logo {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 22px 20px;
+  border-bottom: 1px solid rgba(255,255,255,0.12);
+}
+.panel-logo img { width: 40px; height: auto; }
+.panel-logo span { font-family: 'Sora', sans-serif; font-weight: 800; font-size: 16px; letter-spacing: 0.3px; }
+
+.panel-nav { padding: 16px 12px; display: flex; flex-direction: column; gap: 4px; flex: 1; }
+
+.nav-item {
+  background: transparent;
+  color: rgba(255,255,255,0.82);
+  border: none;
+  text-align: left;
+  padding: 11px 14px;
+  border-radius: 10px;
+  font-size: 14px;
+  font-weight: 500;
+  transition: background 0.15s, color 0.15s;
+}
+.nav-item:hover { background: rgba(255,255,255,0.08); color: #fff; }
+.nav-item.activo {
+  background: var(--verde);
+  color: #fff;
+  font-weight: 600;
+}
+.nav-admin { margin-top: 8px; border-top: 1px solid rgba(255,255,255,0.12); padding-top: 14px; }
+
+.panel-pie-lateral {
+  padding: 16px 14px;
+  border-top: 1px solid rgba(255,255,255,0.12);
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+.panel-usuario { display: flex; flex-direction: column; gap: 1px; }
+.panel-usuario-nombre { font-weight: 600; font-size: 14px; }
+.panel-usuario-rol { font-size: 12px; color: rgba(255,255,255,0.65); }
+
+/* ===== Contenido ===== */
+.panel-contenido { flex: 1; padding: 28px 32px; max-width: 1400px; }
+
+.seccion-titulo { font-size: 21px; font-weight: 800; color: var(--verde-oscuro); margin-bottom: 4px; }
+.seccion-sub { font-size: 13px; color: var(--gris); margin-bottom: 22px; }
+
+/* ===== Tarjetas resumen ===== */
+.tarjetas-resumen { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 16px; margin-bottom: 28px; }
+.tarjeta-resumen {
+  background: var(--blanco);
+  border-radius: 14px;
+  padding: 18px;
+  box-shadow: var(--sombra);
+}
+.tarjeta-resumen .numero { font-family: 'Sora'; font-size: 28px; font-weight: 800; color: var(--verde-oscuro); }
+.tarjeta-resumen .etiqueta { font-size: 13px; color: var(--gris); margin-top: 2px; }
+.tarjeta-resumen.pendiente .numero { color: var(--amber); }
+.tarjeta-resumen.aprobado .numero { color: var(--verde); }
+.tarjeta-resumen.rechazado .numero { color: var(--rojo); }
+
+/* ===== Barra de acciones ===== */
+.barra-acciones { display: flex; gap: 12px; flex-wrap: wrap; margin-bottom: 18px; align-items: center; }
+.barra-acciones .campo { margin: 0; flex: 1; min-width: 140px; max-width: 220px; }
+
+.paginacion { display: flex; align-items: center; justify-content: flex-end; gap: 10px; margin: 16px 0; font-size: 13.5px; color: var(--gris); }
+
+/* ===== Voucher en modal ===== */
+.voucher-caja { background: var(--arena); border-radius: 12px; padding: 16px; display: flex; justify-content: center; margin-bottom: 18px; }
+.voucher-img { max-width: 100%; max-height: 400px; border-radius: 8px; box-shadow: var(--sombra); }
+
+.detalle-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px 22px; margin-bottom: 20px; }
+.detalle-campo .k { font-size: 12px; color: var(--gris); text-transform: uppercase; letter-spacing: 0.4px; }
+.detalle-campo .v { font-size: 14.5px; font-weight: 500; }
+
+/* ===== Gestores ===== */
+.gestor-fila { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 14px 0; border-bottom: 1px solid var(--borde); }
+.gestor-fila:last-child { border-bottom: none; }
+.gestor-info .nombre { font-weight: 600; font-size: 15px; }
+.gestor-info .extra { font-size: 12.5px; color: var(--gris); margin-top: 2px; }
+
+@media (max-width: 760px) {
+  .panel-layout { flex-direction: column; }
+  .panel-lateral { width: 100%; height: auto; position: static; }
+  .panel-nav { flex-direction: row; flex-wrap: wrap; }
+  .panel-nav .nav-admin { border-top: none; }
+  .panel-contenido { padding: 20px 16px; }
+  .detalle-grid { grid-template-columns: 1fr; }
+}
