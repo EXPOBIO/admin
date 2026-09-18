@@ -1,22 +1,28 @@
-/* ===== Modo oscuro EXPOBIO (base #0B4A44) ===== */
+/* ===== Modo oscuro EXPOBIO (azules + negros, con acentos) ===== */
 html[data-tema="oscuro"] {
-  --verde: #7CBCA2;
-  --verde-claro: #143F36;
-  --arena: #0B4A44;
-  --blanco: #0E5750;
-  --texto: #E7F1ED;
-  --gris: #9CC4B8;
-  --borde: #1C6A61;
-  --rojo: #E57A6B;
-  --amber: #E0B25C;
-  --sombra: 0 6px 24px rgba(0, 0, 0, 0.35);
+  --verde: #6BA3FF;
+  --verde-claro: #16243F;
+  --arena: #0A0F1A;
+  --blanco: #121A2E;
+  --verde-oscuro: #0B1220;
+  --texto: #E6ECF7;
+  --gris: #8CA0C8;
+  --borde: #243352;
+  --rojo: #FF6B6B;
+  --amber: #FFC36B;
+  --sombra: 0 6px 24px rgba(0, 0, 0, 0.45);
 }
 
 html[data-tema="oscuro"] body,
 html[data-tema="oscuro"] .login-body {
   background:
-    radial-gradient(1000px 600px at 90% -10%, #0F5A52 0%, transparent 60%),
+    radial-gradient(1000px 600px at 90% -10%, #16243F 0%, transparent 60%),
     var(--arena);
+}
+
+html[data-tema="oscuro"] .login-emblema,
+html[data-tema="oscuro"] .panel-logotipo-caja {
+  background: linear-gradient(145deg, #3B6FE0, #1B3A6E);
 }
 
 html[data-tema="oscuro"] h1,
@@ -37,36 +43,36 @@ html[data-tema="oscuro"] .btn-secundario {
   border-color: var(--verde);
 }
 html[data-tema="oscuro"] .btn-secundario:hover { background: var(--verde-claro); }
-html[data-tema="oscuro"] .btn-peligro:hover { background: #4A2018; }
-html[data-tema="oscuro"] .btn-primario:hover { background: #5E9C85; }
+html[data-tema="oscuro"] .btn-peligro:hover { background: #3A1620; }
+html[data-tema="oscuro"] .btn-primario:hover { background: #5B8DEF; }
 
 html[data-tema="oscuro"] .campo input,
 html[data-tema="oscuro"] .campo select,
 html[data-tema="oscuro"] .campo textarea {
-  background: #0C4A44;
+  background: #0D1626;
   color: var(--texto);
   border-color: var(--borde);
 }
-html[data-tema="oscuro"] .campo input::placeholder { color: #6FA395; }
+html[data-tema="oscuro"] .campo input::placeholder { color: #6B7FA8; }
 html[data-tema="oscuro"] .campo input:focus,
 html[data-tema="oscuro"] .campo select:focus,
 html[data-tema="oscuro"] .campo textarea:focus { border-color: var(--verde); }
 
 html[data-tema="oscuro"] .alerta-error {
-  background: #4A2018;
+  background: #3A1620;
   color: var(--rojo);
-  border-color: #6E3A2F;
+  border-color: #5A2534;
 }
 html[data-tema="oscuro"] .alerta-ok {
-  background: var(--verde-claro);
-  color: #CFEADD;
-  border-color: #1C6A61;
+  background: #123B2E;
+  color: #9BE8C6;
+  border-color: #1D5A45;
 }
 
 html[data-tema="oscuro"] .login-error {
-  background: #4A2018;
+  background: #3A1620;
   color: var(--rojo);
-  border-color: #6E3A2F;
+  border-color: #5A2534;
 }
 
 html[data-tema="oscuro"] .tabla-envoltorio,
@@ -74,33 +80,31 @@ html[data-tema="oscuro"] .tarjeta-resumen {
   background: var(--blanco);
   box-shadow: var(--sombra);
 }
-html[data-tema="oscuro"] .tabla th { background: #083630; }
+html[data-tema="oscuro"] .tabla th { background: #0B1220; }
 html[data-tema="oscuro"] .tabla td { border-bottom-color: var(--borde); }
-html[data-tema="oscuro"] .tabla tbody tr:hover { background: #10534C; }
+html[data-tema="oscuro"] .tabla tbody tr:hover { background: #18243C; }
 
-html[data-tema="oscuro"] .chip-pendiente { background: #4A3A10; color: var(--amber); }
-html[data-tema="oscuro"] .chip-aprobado { background: var(--verde-claro); color: #CFEADD; }
-html[data-tema="oscuro"] .chip-rechazado { background: #4A2018; color: var(--rojo); }
+html[data-tema="oscuro"] .chip-pendiente { background: #3A3016; color: var(--amber); }
+html[data-tema="oscuro"] .chip-aprobado { background: #123B2E; color: #9BE8C6; }
+html[data-tema="oscuro"] .chip-rechazado { background: #3A1620; color: var(--rojo); }
 
 html[data-tema="oscuro"] .modal-caja {
   background: var(--blanco);
-  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.55);
 }
 html[data-tema="oscuro"] .modal-cerrar:hover { color: var(--texto); }
 
-html[data-tema="oscuro"] .panel-lateral { background: #083630; }
-html[data-tema="oscuro"] .nav-item.activo { background: #4E7D6A; }
-html[data-tema="oscuro"] .panel-logotipo-caja {
-  background: linear-gradient(145deg, #4E7D6A, #2E6653);
-}
+html[data-tema="oscuro"] .panel-lateral { background: #0B1220; }
+html[data-tema="oscuro"] .nav-item.activo { background: #3B6FE0; }
+html[data-tema="oscuro"] .nav-item:hover { background: rgba(107, 163, 255, 0.12); }
 
 html[data-tema="oscuro"] .tarjeta-resumen .numero { color: var(--texto); }
 html[data-tema="oscuro"] .tarjeta-resumen.pendiente .numero { color: var(--amber); }
-html[data-tema="oscuro"] .tarjeta-resumen.aprobado .numero { color: var(--verde); }
+html[data-tema="oscuro"] .tarjeta-resumen.aprobado .numero { color: #9BE8C6; }
 html[data-tema="oscuro"] .tarjeta-resumen.rechazado .numero { color: var(--rojo); }
 html[data-tema="oscuro"] .tarjeta-resumen .etiqueta { color: var(--gris); }
 
-html[data-tema="oscuro"] .voucher-caja { background: #0C4A44; }
+html[data-tema="oscuro"] .voucher-caja { background: #0D1626; }
 
 html[data-tema="oscuro"] .detalle-campo .k { color: var(--gris); }
 html[data-tema="oscuro"] .paginacion { color: var(--gris); }
@@ -110,7 +114,7 @@ html[data-tema="oscuro"] .gestor-info .extra { color: var(--gris); }
 
 html[data-tema="oscuro"] .login-card {
   background: var(--blanco);
-  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.45);
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5);
 }
 
 html[data-tema="oscuro"] .login-pie { color: var(--gris); }
