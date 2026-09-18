@@ -7,10 +7,6 @@ document.addEventListener('DOMContentLoaded', function () {
   if (u) {
     document.getElementById('lblUsuario').textContent = u.usuario || '—';
     document.getElementById('lblRol').textContent = (u.comision || (u.rol || '')) || '';
-    if (String(u.rol || '').toLowerCase() !== 'admin') {
-      const item = document.querySelector('.nav-item[data-seccion="gestores"]');
-      if (item) item.classList.add('oculto');
-    }
   }
 
   document.getElementById('btnSalir').addEventListener('click', function () {

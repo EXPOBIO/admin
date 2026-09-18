@@ -1,4 +1,4 @@
-// Sección Gestores: crear y administrar usuarios del panel.
+// Sección Gestores: crear gestores (todos) y gestionar (solo admin).
 (function () {
   let yo = null;
 
@@ -9,25 +9,30 @@
     const cont = document.getElementById('seccion-gestores');
     cont.innerHTML =
       '<h2 class="seccion-titulo">Gestores</h2>' +
-      '<p class="seccion-sub">Usuarios con acceso al panel' + (esAdmin ? '' : ' · solo administradores pueden editar') + '</p>' +
+      '<p class="seccion-sub">Usuarios con acceso al panel' + (esAdmin ? ' · solo administradores editan gestores' : ' · puedes crear nuevos gestores') + '</p>' +
 
-      (esAdmin ?
-        '<div class="barra-acciones">' +
-          '<label class="campo"><input type="text" id="g-usuario" placeholder="Usuario" autocomplete="off"></label>' +
-          '<label class="campo"><input type="password" id="g-clave" placeholder="Contraseña (mín 6)"></label>' +
-          '<label class="campo"><input type="text" id="g-comision" placeholder="Comisión (ej. Logística)"></label>' +
-          '<label class="campo"><select id="g-rol"><option value="gestor">Gestor</option><option value="admin">Admin</option></select></label>' +
-          '<button class="btn-primario" id="btnCrearGestor">Crear gestor</button>' +
-        '</div>' : '') +
+      '<div class="barra-acciones">' +
+        '<label class="campo"><input type="text" id="g-usuario" placeholder="Usuario" autocomplete="off"></label>' +
+        '<label class="campo"><input type="password" id="g-clave" placeholder="Contraseña (mín 6)"></label>' +
+        '<label class="campo"><input type="text" id="g-comision" placeholder="Comisión (ej. Logística)"></label>' +
+        (esAdmin ? '<label class="campo"><select id="g-rol"><option value="gestor">Gestor</option><option value="admin">Admin</option></select></label>' : '') +
+        '<button class="btn-primario" id="btnCrearGestor">Crear gestor</button>' +
+      '</div>' +
 
       '<div class="tarjeta-resumen" style="padding:10px 18px">' +
         '<div id="lista-gestores"></div>' +
       '</div>' +
       '<div id="avisoGestores"></div>';
 
-    if (esAdmin) {
-      document.getElementById('btnCrearGestor').addEventListener('click', crear);
-    }
+    document.getElementById('btnCrearGestor').addEventListener('click', function () {
+      const g = document.getElementById;
+      crear({
+        usuario: g('g-usuario').value.trim(),
+        clave: g('g-clave').value,
+        comision: g('g-comision').value.trim(),
+        rol: esAdmin ? g('g-rol').value : 'gestor'
+      });
+    });
 
     await pintar();
   }
@@ -68,20 +73,14 @@
     });
   }
 
-  async function crear() {
-    const g = document.getElementById;
-    const cuerpo = {
-      usuario: g('g-usuario').value.trim(),
-      clave: g('g-clave').value,
-      comision: g('g-comision').value.trim(),
-      rol: g('g-rol').value
-    };
+  async function crear(cuerpo) {
     if (!cuerpo.usuario || cuerpo.clave.length < 6) {
       return aviso({ ok: false, mensaje: 'Usuario vacío o contraseña menor a 6 caracteres.' });
     }
     const r = await apiLlamada('crearGestor', cuerpo);
     aviso(r);
     if (r.ok) {
+      const g = document.getElementById;
       ['g-usuario', 'g-clave', 'g-comision'].forEach(function (id) { g(id).value = ''; });
       pintar();
     }

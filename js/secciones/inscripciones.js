@@ -2,6 +2,8 @@
 (function () {
   const estado = { filtro: '', tipo: '', busqueda: '', pagina: 1, tamano: 20, vista: 'todos' };
 
+  const esc = function (s) { return String(s == null ? '' : s).replace(/[&<>"']/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]; }); };
+
   async function cargar() {
     const cont = document.getElementById('seccion-inscripciones');
     cont.innerHTML =
@@ -191,6 +193,7 @@
             '<button class="btn-secundario" id="btnAprobar">Aprobar</button>' +
             '<button class="btn-peligro" id="btnRechazar">Rechazar</button>' +
             '<button class="btn-peligro" id="btnEliminar">Eliminar</button>' +
+            (i.ID ? '<button class="btn-secundario" id="btnEditar">Editar datos</button>' : '') +
           '</div>' +
         '</div>' +
 
@@ -210,7 +213,74 @@
       eliminarInscripcion(targetId, r.grupoId, motivo.trim());
     });
 
+    if (document.getElementById('btnEditar')) {
+      document.getElementById('btnEditar').addEventListener('click', function () {
+        abrirEdicion(i.ID, r.grupoId, i);
+      });
+    }
+
     modal.classList.remove('oculto');
+  }
+
+  // ---------- Edición de datos ----------
+
+  async function abrirEdicion(id, grupoId, i) {
+    const modal = document.getElementById('modal');
+    modal.innerHTML =
+      '<div class="modal-caja">' +
+        '<div class="modal-titulo"><span>Editar inscripción <code>' + (i.ID || '') + '</code></span>' +
+          '<button class="modal-cerrar" onclick="CerrarModal()">×</button></div>' +
+        '<p class="seccion-sub">Corrige datos mal llenados (código, universidad, pago…).</p>' +
+        '<div class="detalle-grid">' +
+          '<label class="campo"><span>Nombres</span><input id="e-nombres" value="' + esc(i.Nombres || '') + '"></label>' +
+          '<label class="campo"><span>Apellido paterno</span><input id="e-app" value="' + esc(i['Apellido paterno'] || '') + '"></label>' +
+          '<label class="campo"><span>Apellido materno</span><input id="e-apm" value="' + esc(i['Apellido materno'] || '') + '"></label>' +
+          '<label class="campo"><span>Código</span><input id="e-codigo" value="' + esc(i.Código || '') + '"></label>' +
+          '<label class="campo"><span>Universidad</span><input id="e-universidad" value="' + esc(i.Universidad || '') + '"></label>' +
+          '<label class="campo"><span>Facultad / Institución</span><input id="e-facultad" value="' + esc(i['Facultad / Institución'] || '') + '"></label>' +
+          '<label class="campo"><span>DNI</span><input id="e-dni" maxlength="8" value="' + esc(i.DNI || '') + '"></label>' +
+          '<label class="campo"><span>Celular</span><input id="e-celular" value="' + esc(i.Celular || '') + '"></label>' +
+          '<label class="campo"><span>Monto verificado (S/.)</span><input id="e-monto" value="' + esc(i.MontoVerificado || '') + '"></label>' +
+          '<label class="campo"><span>Tipo de pago</span><input id="e-pago" value="' + esc(i.TipoPago || '') + '"></label>' +
+          '<label class="campo"><span>N° transacción</span><input id="e-nro" value="' + esc(i.NumeroTransaccion || '') + '"></label>' +
+        '</div>' +
+        '<div id="avisoEdit"></div>' +
+        '<div class="barra-acciones" style="justify-content:flex-end">' +
+          '<button class="btn-secundario" onclick="CerrarModal()">Cancelar</button>' +
+          '<button class="btn-primario" id="btnGuardarEdit">Guardar cambios</button>' +
+        '</div>' +
+      '</div>';
+
+    document.getElementById('btnGuardarEdit').addEventListener('click', function () { guardarEdicion(id, grupoId); });
+    modal.classList.remove('oculto');
+  }
+
+  async function guardarEdicion(id, grupoId) {
+    const g = document.getElementById;
+    const campos = {
+      nombres: g('e-nombres').value.trim(),
+      apellidoPaterno: g('e-app').value.trim(),
+      apellidoMaterno: g('e-apm').value.trim(),
+      codigo: g('e-codigo').value.trim(),
+      universidad: g('e-universidad').value.trim(),
+      facultadInstitucion: g('e-facultad').value.trim(),
+      dni: g('e-dni').value.trim(),
+      celular: g('e-celular').value.trim(),
+      montoVerificado: g('e-monto').value.trim(),
+      tipoPago: g('e-pago').value.trim(),
+      numeroTransaccion: g('e-nro').value.trim()
+    };
+
+    const btn = document.getElementById('btnGuardarEdit');
+    btn.disabled = true;
+    const r = await apiLlamada('editarInscripcion', { id: id, grupoId: grupoId, campos: campos });
+    const aviso = document.getElementById('avisoEdit');
+    aviso.innerHTML = '<div class="alerta ' + (r.ok ? 'alerta-ok' : 'alerta-error') + '">' + (r.mensaje || '') + '</div>';
+    if (r.ok) {
+      setTimeout(function () { CerrarModal(); pintar(); pintarResumenTop(); actualizarResumenSiVisible(); }, 700);
+    } else {
+      btn.disabled = false;
+    }
   }
 
   async function eliminarInscripcion(id, grupoId, motivo) {
