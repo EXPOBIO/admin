@@ -60,8 +60,8 @@ del Spreadsheet no puede ver ni alterar nada de eso.
 
 ## Uso
 
-- **Resumen**: contadores de inscripciones (total, pendientes, aprobados, rechazados, por tipo) + **dinero aprobado** y desglose por tipo de pago (físico, Yape, Otro medio…).
-- **Inscripciones**: filtrar (estado/tipo/búsqueda), paginar, ver detalle con voucher, aprobar/rechazar, **eliminar (mueve a hoja Eliminados con motivo)**, exportar CSV.
+- **Resumen**: contadores de inscripciones (total, pendientes, aprobados, rechazados, por tipo) + **dinero aprobado** y desglose por tipo de pago (físico, Yape, Otro medio…). Los **Grupos de 10 cuentan como 1** (comparten un solo voucher), no por integrante.
+- **Inscripciones**: filtrar (estado/tipo/búsqueda), paginar, ver detalle con voucher, aprobar/rechazar (en grupos se aplica al grupo completo), **eliminar (mueve a hoja Eliminados con motivo; en grupos mueve a todos sus integrantes)**, exportar CSV. Selector de vista **"Todos" / "Grupos de 10"**. La hoja Inscripciones **no** tiene columna `MotivoRechazo` (solo existe en Eliminados).
 - **Organizadores**: listado del comité y asignación de IDs (ORG-XXXX).
 - **Precios**: edición de costos por categoría.
 - **Gestores**: crear usuarios y activar/desactivarlos (solo rol admin).

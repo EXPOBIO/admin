@@ -1,6 +1,6 @@
 // Sección Inscripciones: tabla con filtros, paginación y modal de detalle.
 (function () {
-  const estado = { filtro: '', tipo: '', busqueda: '', pagina: 1, tamano: 20 };
+  const estado = { filtro: '', tipo: '', busqueda: '', pagina: 1, tamano: 20, vista: 'todos' };
 
   async function cargar() {
     const cont = document.getElementById('seccion-inscripciones');
@@ -14,6 +14,10 @@
           '<option value="pendiente">Pendiente</option>' +
           '<option value="aprobado">Aprobado</option>' +
           '<option value="rechazado">Rechazado</option>' +
+        '</select></label>' +
+        '<label class="campo"><select id="f-vista">' +
+          '<option value="todos">Todos (cada persona)</option>' +
+          '<option value="grupos">Grupos de 10 (agrupados)</option>' +
         '</select></label>' +
         '<label class="campo"><select id="f-por-tipo">' +
           '<option value="">Todos los tipos</option>' +
@@ -39,6 +43,7 @@
       '<div class="paginacion" id="paginacion"></div>';
 
     document.getElementById('f-por-estado').addEventListener('change', function () { estado.filtro = this.value; estado.pagina = 1; pintar(); });
+    document.getElementById('f-vista').addEventListener('change', function () { estado.vista = this.value; estado.pagina = 1; pintar(); });
     document.getElementById('f-por-tipo').addEventListener('change', function () { estado.tipo = this.value; estado.pagina = 1; pintar(); });
     document.getElementById('f-busqueda').addEventListener('input', function () { estado.busqueda = this.value; estado.pagina = 1; pintar(); });
     document.getElementById('btnDescargar').addEventListener('click', descargarCsv);
@@ -52,7 +57,7 @@
     if (!tb) return;
     tb.innerHTML = '<tr><td colspan="8">Cargando…</td></tr>';
 
-    const r = await apiLlamada('listarInscripciones', { estado: estado.filtro, tipo: estado.tipo, busqueda: estado.busqueda, pagina: estado.pagina, tamano: estado.tamano });
+    const r = await apiLlamada('listarInscripciones', { estado: estado.filtro, tipo: estado.tipo, busqueda: estado.busqueda, pagina: estado.pagina, tamano: estado.tamano, vista: estado.vista });
     if (!r.ok) { tb.innerHTML = '<tr><td colspan="8" style="color:var(--rojo)">' + (r.mensaje || 'Error') + '</td></tr>'; return; }
 
     if (!r.inscripciones.length) { tb.innerHTML = '<tr><td colspan="8">No hay inscripciones.</td></tr>'; return; }
@@ -63,8 +68,11 @@
       const chip = chips[i.estado.toLowerCase()] || 'chip-pendiente';
       const fecha = i.fecha ? new Date(i.fecha).toLocaleDateString('es-PE', { day: '2-digit', month: '2-digit' }) : '—';
       const nombre = (i.nombres || '') + ' ' + (i.apellidos || '');
-      return '<tr class="fila-datos" data-id="' + i.id + '">' +
-        '<td>' + i.id + '</td><td>' + fecha + '</td><td>' + i.tipo + '</td>' +
+      const tipoCelda = i.esGrupo
+        ? 'Grupo de 10 <span class="chip chip-aprobado" title="Integrantes">×' + i.cantidad + '</span>'
+        : i.tipo;
+      return '<tr class="fila-datos" data-id="' + i.id + '" data-grupo="' + (i.grupoId || '') + '" data-esgrupo="' + (i.esGrupo ? '1' : '0') + '">' +
+        '<td>' + (i.esGrupo ? i.grupoId : i.id) + '</td><td>' + fecha + '</td><td>' + tipoCelda + '</td>' +
         '<td>' + nombre + '</td><td>' + (i.codigo || '—') + '</td>' +
         '<td>' + (i.universidad || '—') + '</td><td>' + (i.dni || '—') + '</td>' +
         '<td><span class="chip ' + chip + '">' + i.estado + '</span></td>' +
@@ -73,7 +81,9 @@
 
     // Reasignar click con delegación limpia
     tb.querySelectorAll('tr.fila-datos').forEach(function (tr) {
-      tr.addEventListener('click', function () { abrirDetalle(tr.getAttribute('data-id')); });
+      tr.addEventListener('click', function () {
+        abrirDetalle(tr.getAttribute('data-id'), tr.getAttribute('data-grupo'), tr.getAttribute('data-esgrupo') === '1');
+      });
     });
 
     pintarPaginacion(r.total);
@@ -99,8 +109,9 @@
 
   // ---------- Modal de detalle ----------
 
-  async function abrirDetalle(id) {
-    const r = await apiLlamada('obtenerInscripcion', { id: id });
+  async function abrirDetalle(id, grupoId, esGrupo) {
+    const body = esGrupo && grupoId ? { grupoId: grupoId } : { id: id };
+    const r = await apiLlamada('obtenerInscripcion', body);
     if (!r.ok) return notificar(r.mensaje || 'No se pudo abrir.');
 
     const i = r.inscripcion;
@@ -111,31 +122,42 @@
 
     const campos = [
       ['Nombres', i.Nombres], ['Apellidos', (i['Apellido paterno'] || '') + ' ' + (i['Apellido materno'] || '')],
-      ['Tipo', i.Tipo], ['Código', i.Código || '—'],
+      ['Tipo', i.Tipo],
       ['Universidad', i.Universidad || '—'], ['Facultad / Institución', i['Facultad / Institución'] || '—'],
       ['DNI', i.DNI || '—'], ['Celular', i.Celular || '—'],
       ['ID de grupo', i['ID de grupo'] || '—'], ['Fecha', i.Fecha ? new Date(i.Fecha).toLocaleString('es-PE') : '—'],
       ['Monto verificado', i.MontoVerificado || '—'], ['Tipo de pago', i.TipoPago || '—'],
-      ['N° transacción', i.NumeroTransaccion || '—'], ['Motivo de rechazo', i.MotivoRechazo || '—']
+      ['N° transacción', i.NumeroTransaccion || '—']
     ];
 
     const chip = 'chip-' + String(i.Estado).toLowerCase();
+    const integrantesHtml = r.miembros && r.miembros.length
+      ? '<h3 class="seccion-titulo" style="font-size:15px;margin-top:22px">Integrantes del grupo (' + r.miembros.length + ')</h3>' +
+        '<div class="tabla-envoltorio" style="margin-top:10px"><table class="tabla">' +
+          '<thead><tr><th>Nombres</th><th>DNI</th><th>Código</th><th>Estado</th></tr></thead><tbody>' +
+          r.miembros.map(function (m) {
+            return '<tr><td>' + (m.Nombres || '') + ' ' + (m.ApellidoPaterno || '') + ' ' + (m.ApellidoMaterno || '') + '</td>' +
+              '<td>' + (m.DNI || '—') + '</td><td>' + (m.Código || '—') + '</td>' +
+              '<td><span class="chip chip-' + String(m.Estado).toLowerCase() + '">' + m.Estado + '</span></td></tr>';
+          }).join('') +
+          '</tbody></table></div>'
+      : '';
 
     modal.innerHTML =
       '<div class="modal-caja">' +
         '<div class="modal-titulo">' +
-          '<span>Inscripción <code>' + i.ID + '</code> · <span class="chip ' + chip + '">' + i.Estado + '</span></span>' +
+          '<span>' + (r.esGrupo ? 'Grupo de 10 <code>' + i.ID + '</code>' : 'Inscripción <code>' + i.ID + '</code>') + ' · <span class="chip ' + chip + '">' + i.Estado + '</span></span>' +
           '<button class="modal-cerrar" onclick="CerrarModal()">×</button>' +
         '</div>' +
 
         voucher +
+        integrantesHtml +
 
         '<div class="detalle-grid">' +
           campos.map(function (c) { return '<div class="detalle-campo"><div class="k">' + c[0] + '</div><div class="v">' + (c[1] || '—') + '</div></div>'; }).join('') +
         '</div>' +
 
         '<div id="detalleAcciones" class="barra-acciones">' +
-          '<label class="campo" style="max-width:280px"><span>Motivo (para rechazo)</span><input type="text" id="motivoRechazo" placeholder="Ej. voucher no legible"></label>' +
           '<div style="display:flex;gap:10px;align-items:center">' +
             '<button class="btn-secundario" id="btnAprobar">Aprobar</button>' +
             '<button class="btn-peligro" id="btnRechazar">Rechazar</button>' +
@@ -146,25 +168,26 @@
         '<div id="avisoAccion"></div>' +
       '</div>';
 
-    document.getElementById('btnAprobar').addEventListener('click', function () { aplicarEstado(i.ID, 'aprobado', ''); });
+    const targetId = r.esGrupo ? (i.ID || '') : i.ID;
+    document.getElementById('btnAprobar').addEventListener('click', function () { aplicarEstado(targetId, r.grupoId, 'aprobado'); });
     document.getElementById('btnRechazar').addEventListener('click', function () {
-      aplicarEstado(i.ID, 'rechazado', document.getElementById('motivoRechazo').value.trim());
+      aplicarEstado(targetId, r.grupoId, 'rechazado');
     });
     document.getElementById('btnEliminar').addEventListener('click', async function () {
       const motivo = prompt('Motivo de la eliminación (se moverá a la hoja Eliminados):');
       if (motivo === null) return;
       if (!motivo.trim()) { alert('Indica un motivo.'); return; }
       if (!confirm('¿Mover a Eliminados? Esta acción borrará la fila de Inscripciones.')) return;
-      eliminarInscripcion(i.ID, motivo.trim());
+      eliminarInscripcion(targetId, r.grupoId, motivo.trim());
     });
 
     modal.classList.remove('oculto');
   }
 
-  async function eliminarInscripcion(id, motivo) {
+  async function eliminarInscripcion(id, grupoId, motivo) {
     const btnEliminar = document.getElementById('btnEliminar');
     btnEliminar.disabled = true;
-    const r = await apiLlamada('eliminarInscripcion', { id: id, motivo: motivo });
+    const r = await apiLlamada('eliminarInscripcion', { id: id, grupoId: grupoId, motivo: motivo });
     const aviso = document.getElementById('avisoAccion');
     aviso.innerHTML = '<div class="alerta ' + (r.ok ? 'alerta-ok' : 'alerta-error') + '">' + (r.mensaje || '') + '</div>';
     if (r.ok) {
@@ -174,18 +197,19 @@
     }
   }
 
-  async function aplicarEstado(id, estadoNuevo, motivo) {
+  async function aplicarEstado(id, grupoId, estadoNuevo) {
     const btnAprobar = document.getElementById('btnAprobar');
     const btnRechazar = document.getElementById('btnRechazar');
     btnAprobar.disabled = btnRechazar.disabled = true;
 
-    const r = await apiLlamada('cambiarEstado', { id: id, estado: estadoNuevo, motivo: motivo });
+    const r = await apiLlamada('cambiarEstado', { id: id, grupoId: grupoId, estado: estadoNuevo });
     const aviso = document.getElementById('avisoAccion');
     aviso.innerHTML = '<div class="alerta ' + (r.ok ? 'alerta-ok' : 'alerta-error') + '">' + (r.mensaje || '') + '</div>';
 
     if (r.ok) {
-      btnAprobar.disabled = btnRechazar.disabled = false;
       setTimeout(function () { CerrarModal(); pintar(); actualizarResumenSiVisible(); }, 700);
+    } else {
+      btnAprobar.disabled = btnRechazar.disabled = false;
     }
   }
 
