@@ -34,7 +34,7 @@ fuera de git, igual que en el resto de proyectos EXPOBIO.
 
 ## Puesta a punto (una sola vez)
 
-1. **Crear la Web App**: copia estos `.gs` (viven en `~/Projects/05_EXPOBIO/backend/ADMIN/`,
+1. **Crear la Web App**: copia estos `.gs` (viven en `backend_appscript/` de esta carpeta,
    **no subirlos jamás**) a un proyecto de script.google.com:
    `Admin.gs`, `Auth.gs`, `Inscripciones.gs`, `Organizadores.gs`,
    `Precios.gs`, `Utilidades.gs`.
