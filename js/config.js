@@ -1,5 +1,3 @@
 // Config del panel EXPOBIO.
-// Rellena con la URL "/exec" del nuevo Web App (Admin.gs + Auth.gs + Inscripciones.gs,
-// Organizadores.gs + Precios.gs + Utilidades.gs) una vez lo despliegues.
 // Esta URL es pública (como cualquier frontend), no contiene secretos.
-const API_URL = 'PON_AQUI_LA_URL_DE_LA_WEB_APP';
+const API_URL = 'https://script.google.com/macros/s/AKfycbzv4JCNjqNDq1yOMRhx82PFKQBgnIna9LMi841PLd-s0-_Yq-rktIJQUQqS_qfv4WLaaw/exec';
