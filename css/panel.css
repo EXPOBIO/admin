@@ -13,15 +13,29 @@
   flex-shrink: 0;
 }
 
-.panel-logo {
+.panel-logotipo {
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 12px;
   padding: 22px 20px;
   border-bottom: 1px solid rgba(255,255,255,0.12);
 }
-.panel-logo img { width: 40px; height: auto; }
-.panel-logo span { font-family: 'Sora', sans-serif; font-weight: 800; font-size: 16px; letter-spacing: 0.3px; }
+.panel-logotipo-caja {
+  width: 42px;
+  height: 42px;
+  border-radius: 12px;
+  background: linear-gradient(145deg, var(--verde), #2E6653);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #fff;
+  font-family: 'Sora', sans-serif;
+  font-weight: 800;
+  font-size: 17px;
+}
+.panel-logotipo-texto { display: flex; flex-direction: column; line-height: 1.2; }
+.panel-logotipo-nombre { font-family: 'Sora', sans-serif; font-weight: 800; font-size: 16px; letter-spacing: 1px; }
+.panel-logotipo-anyo { font-size: 11.5px; color: rgba(255,255,255,0.65); letter-spacing: 0.5px; }
 
 .panel-nav { padding: 16px 12px; display: flex; flex-direction: column; gap: 4px; flex: 1; }
 
