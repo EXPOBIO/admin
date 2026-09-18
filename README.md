@@ -13,11 +13,17 @@ expobio.github.io/admin/   (este repo, frontend estático)
 Google Apps Script "Admin"  ⚠️ SECRETO · NUNCA en este repo
         │  openById(SPREADSHEET_ID)
         ▼
-Google Sheets: Inscripciones · Organizadores · Gestores · Sesiones · Precios
+Google Sheets: Inscripciones · Organizadores · Eliminados · Precios
 ```
 
 El frontend **no contiene secretos**. Todo el backend (`*.gs`) se mantiene
 fuera de git, igual que en el resto de proyectos EXPOBIO.
+
+**Seguridad de credenciales**: las contraseñas de los gestores NO se guardan
+en hojas. Viven en *Script Properties* del proyecto de Apps Script (hash
+SHA-256 + `salt` por usuario, nunca texto plano). Las sesiones usan un token
+aleatorio con vencimiento a las 8 h, también en Script Properties. Un editor
+del Spreadsheet no puede ver ni alterar nada de eso.
 
 ## Estructura del frontend
 
@@ -38,10 +44,10 @@ fuera de git, igual que en el resto de proyectos EXPOBIO.
    **no subirlos jamás**) a un proyecto de script.google.com:
    `Admin.gs`, `Auth.gs`, `Inscripciones.gs`, `Organizadores.gs`,
    `Precios.gs`, `Utilidades.gs`.
-2. **Crear la hoja Gestores** con una fila admin:
-   `Usuario | HashClave | Comision | Rol | Activo`
-   - `HashClave` = SHA-256 de la contraseña (genérate con un editor cualquiera).
-   - `Rol` = `admin`.
+2. **Crear el primer administrador**: en el editor de Apps Script ejecuta una
+   sola vez la función `crearPrimerAdmin('usuario', 'contraseña', 'Comisión')`
+   (mira los logs). El resto de gestores se crean desde el panel. Las
+   credenciales se guardan cifradas en Script Properties (no en la hoja).
 3. **Desplegar** → Web app → Ejecutar como: *Yo* → Acceso: *Cualquiera* → copiar la URL `/exec`.
 4. Pegar esa URL en `js/config.js` (`API_URL`) y hacer push.
 
@@ -51,8 +57,8 @@ fuera de git, igual que en el resto de proyectos EXPOBIO.
 
 ## Uso
 
-- **Resumen**: contadores de inscripciones (total, pendientes, aprobados, rechazados, por tipo).
-- **Inscripciones**: filtrar (estado/tipo/búsqueda), paginar, ver detalle con voucher, aprobar/rechazar, exportar CSV.
+- **Resumen**: contadores de inscripciones (total, pendientes, aprobados, rechazados, por tipo) + **dinero aprobado** y desglose por tipo de pago (físico, Yape, Otro medio…).
+- **Inscripciones**: filtrar (estado/tipo/búsqueda), paginar, ver detalle con voucher, aprobar/rechazar, **eliminar (mueve a hoja Eliminados con motivo)**, exportar CSV.
 - **Organizadores**: listado del comité y asignación de IDs (ORG-XXXX).
 - **Precios**: edición de costos por categoría.
 - **Gestores**: crear usuarios y activar/desactivarlos (solo rol admin).

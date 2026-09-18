@@ -139,6 +139,7 @@
           '<div style="display:flex;gap:10px;align-items:center">' +
             '<button class="btn-secundario" id="btnAprobar">Aprobar</button>' +
             '<button class="btn-peligro" id="btnRechazar">Rechazar</button>' +
+            '<button class="btn-peligro" id="btnEliminar">Eliminar</button>' +
           '</div>' +
         '</div>' +
 
@@ -149,8 +150,28 @@
     document.getElementById('btnRechazar').addEventListener('click', function () {
       aplicarEstado(i.ID, 'rechazado', document.getElementById('motivoRechazo').value.trim());
     });
+    document.getElementById('btnEliminar').addEventListener('click', async function () {
+      const motivo = prompt('Motivo de la eliminación (se moverá a la hoja Eliminados):');
+      if (motivo === null) return;
+      if (!motivo.trim()) { alert('Indica un motivo.'); return; }
+      if (!confirm('¿Mover a Eliminados? Esta acción borrará la fila de Inscripciones.')) return;
+      eliminarInscripcion(i.ID, motivo.trim());
+    });
 
     modal.classList.remove('oculto');
+  }
+
+  async function eliminarInscripcion(id, motivo) {
+    const btnEliminar = document.getElementById('btnEliminar');
+    btnEliminar.disabled = true;
+    const r = await apiLlamada('eliminarInscripcion', { id: id, motivo: motivo });
+    const aviso = document.getElementById('avisoAccion');
+    aviso.innerHTML = '<div class="alerta ' + (r.ok ? 'alerta-ok' : 'alerta-error') + '">' + (r.mensaje || '') + '</div>';
+    if (r.ok) {
+      setTimeout(function () { CerrarModal(); pintar(); actualizarResumenSiVisible(); }, 700);
+    } else {
+      btnEliminar.disabled = false;
+    }
   }
 
   async function aplicarEstado(id, estadoNuevo, motivo) {
