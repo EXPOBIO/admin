@@ -8,7 +8,9 @@
       '<h2 class="seccion-titulo">Inscripciones</h2>' +
       '<p class="seccion-sub">Revisa y aprueba o rechaza cada inscripción</p>' +
 
-      '<div class="barra-acciones">' +
+      '<div id="insResumenTop"></div>' +
+
+      '<div class="barra-acciones" style="margin-top:18px">' +
         '<label class="campo"><select id="f-por-estado">' +
           '<option value="">Todos los estados</option>' +
           '<option value="pendiente">Pendiente</option>' +
@@ -49,7 +51,34 @@
     document.getElementById('btnDescargar').addEventListener('click', descargarCsv);
     document.getElementById('btnNuevo').addEventListener('click', abrirNuevaInscripcion);
 
-    await pintar();
+    await Promise.all([pintarResumenTop(), pintar()]);
+  }
+
+  async function pintarResumenTop() {
+    const caja = document.getElementById('insResumenTop');
+    if (!caja) return;
+
+    const r = await apiLlamada('resumen');
+    if (!r.ok) { caja.innerHTML = ''; return; }
+
+    const s = r.resumen;
+    const e = s.porEstado || {};
+    const mini = function (num, etiqueta, cls, dinero) {
+      return '<div class="mini-resumen ' + (cls || '') + '">' +
+        '<span class="mini-numero">' + Number(num || 0).toLocaleString('es-PE') + '</span>' +
+        '<span class="mini-etiqueta">' + etiqueta + '</span>' +
+        '</div>';
+    };
+
+    caja.innerHTML =
+      '<div class="resumen-minigrid">' +
+        mini((e.aprobado || {}).personas, 'Aprobados', 'miniaprobado') +
+        mini((e.pendiente || {}).personas, 'Pendientes', 'minipendiente') +
+        mini((e.rechazado || {}).personas, 'Rechazados', 'mini-rechazado') +
+        mini(s.total, 'Inscripciones', '') +
+        mini((s.porTipo && s.porTipo.Grupo10) || 0, 'Grupos de 10', 'minigrupo') +
+        mini(s.dinero && s.dinero.total, 'Verificado (S/)', 'miniaprobado') +
+      '</div>';
   }
 
   async function pintar() {
@@ -191,7 +220,7 @@
     const aviso = document.getElementById('avisoAccion');
     aviso.innerHTML = '<div class="alerta ' + (r.ok ? 'alerta-ok' : 'alerta-error') + '">' + (r.mensaje || '') + '</div>';
     if (r.ok) {
-      setTimeout(function () { CerrarModal(); pintar(); actualizarResumenSiVisible(); }, 700);
+      setTimeout(function () { CerrarModal(); pintar(); pintarResumenTop(); actualizarResumenSiVisible(); }, 700);
     } else {
       btnEliminar.disabled = false;
     }
@@ -207,7 +236,7 @@
     aviso.innerHTML = '<div class="alerta ' + (r.ok ? 'alerta-ok' : 'alerta-error') + '">' + (r.mensaje || '') + '</div>';
 
     if (r.ok) {
-      setTimeout(function () { CerrarModal(); pintar(); actualizarResumenSiVisible(); }, 700);
+      setTimeout(function () { CerrarModal(); pintar(); pintarResumenTop(); actualizarResumenSiVisible(); }, 700);
     } else {
       btnAprobar.disabled = btnRechazar.disabled = false;
     }
@@ -280,7 +309,7 @@
     const r = await apiLlamada('registrarManual', { datos: datos });
     const aviso = document.getElementById('avisoNuevo');
     aviso.innerHTML = '<div class="alerta ' + (r.ok ? 'alerta-ok' : 'alerta-error') + '">' + (r.mensaje || '') + '</div>';
-    if (r.ok) setTimeout(function () { CerrarModal(); pintar(); actualizarResumenSiVisible(); }, 800);
+    if (r.ok) setTimeout(function () { CerrarModal(); pintar(); pintarResumenTop(); actualizarResumenSiVisible(); }, 800);
   }
 
   function leerBase64(archivo) {
