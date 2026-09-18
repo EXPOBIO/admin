@@ -112,6 +112,29 @@ html[data-tema="oscuro"] .voucher-caja { background: #0D2E05; }
 html[data-tema="oscuro"] .detalle-campo .k { color: var(--gris); }
 html[data-tema="oscuro"] .paginacion { color: var(--gris); }
 
+html[data-tema="oscuro"] .resumen-grupo-titulo { color: var(--gris); }
+
+html[data-tema="oscuro"] .bloque-resumen,
+html[data-tema="oscuro"] .mini-resumen {
+  background: var(--blanco);
+  box-shadow: var(--sombra);
+}
+html[data-tema="oscuro"] .bloque-titulo { color: var(--texto); }
+html[data-tema="oscuro"] .bloque-numero { color: var(--texto); }
+html[data-tema="oscuro"] .bloque-aprobado .bloque-kpi .bloque-numero { color: #9BE89A; }
+html[data-tema="oscuro"] .bloque-pendiente .bloque-kpi .bloque-numero { color: var(--amber); }
+html[data-tema="oscuro"] .bloque-kpi.kpi-obs .bloque-numero { color: #FFC36B; }
+
+html[data-tema="oscuro"] .mini-resumen .mini-numero { color: var(--texto); }
+html[data-tema="oscuro"] .mini-resumen.minigrupo .mini-numero { color: var(--amber); }
+html[data-tema="oscuro"] .mini-resumen.mini-rechazado .mini-numero { color: var(--rojo); }
+html[data-tema="oscuro"] .mini-resumen.miniaprobado .mini-numero { color: #9BE89A; }
+
+html[data-tema="oscuro"] .chip-resumen {
+  background: #1E600B;
+  color: #B8E89A;
+}
+
 html[data-tema="oscuro"] .gestor-fila { border-bottom-color: var(--borde); }
 html[data-tema="oscuro"] .gestor-info .extra { color: var(--gris); }
 
