@@ -44,10 +44,13 @@ del Spreadsheet no puede ver ni alterar nada de eso.
    **no subirlos jamás**) a un proyecto de script.google.com:
    `Admin.gs`, `Auth.gs`, `Inscripciones.gs`, `Organizadores.gs`,
    `Precios.gs`, `Utilidades.gs`.
-2. **Crear el primer administrador**: en el editor de Apps Script ejecuta una
-   sola vez la función `crearPrimerAdmin('usuario', 'contraseña', 'Comisión')`
-   (mira los logs). El resto de gestores se crean desde el panel. Las
-   credenciales se guardan cifradas en Script Properties (no en la hoja).
+2. **Crear el primer administrador**: en el editor de Apps Script, en `Auth.gs`
+   edita los valores del bloque `ADMIN_INICIAL` (usuario, clave, comisión),
+   guarda y ejecuta la función **`crearAdminInicial`** (sin argumentos) desde el
+   desplegable. Revisa **Ver → Registro** para confirmar
+   `✓ Primer admin creado: …`. El resto de gestores se crean desde el panel.
+   Las credenciales se guardan cifradas en Script Properties (no en la hoja).
+   También existe `listarGestoresLog()` para ver los gestores registrados.
 3. **Desplegar** → Web app → Ejecutar como: *Yo* → Acceso: *Cualquiera* → copiar la URL `/exec`.
 4. Pegar esa URL en `js/config.js` (`API_URL`) y hacer push.
 
