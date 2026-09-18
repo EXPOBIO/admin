@@ -1,0 +1,123 @@
+/* ===== Modo oscuro EXPOBIO (base #0B4A44) ===== */
+html[data-tema="oscuro"] {
+  --verde: #7CBCA2;
+  --verde-claro: #143F36;
+  --arena: #0B4A44;
+  --blanco: #0E5750;
+  --texto: #E7F1ED;
+  --gris: #9CC4B8;
+  --borde: #1C6A61;
+  --rojo: #E57A6B;
+  --amber: #E0B25C;
+  --sombra: 0 6px 24px rgba(0, 0, 0, 0.35);
+}
+
+html[data-tema="oscuro"] body,
+html[data-tema="oscuro"] .login-body {
+  background:
+    radial-gradient(1000px 600px at 90% -10%, #0F5A52 0%, transparent 60%),
+    var(--arena);
+}
+
+html[data-tema="oscuro"] h1,
+html[data-tema="oscuro"] h2,
+html[data-tema="oscuro"] h3,
+html[data-tema="oscuro"] .seccion-titulo,
+html[data-tema="oscuro"] .login-titulo,
+html[data-tema="oscuro"] .modal-titulo {
+  color: var(--texto);
+}
+
+html[data-tema="oscuro"] .seccion-sub { color: var(--gris); }
+
+html[data-tema="oscuro"] .campo span { color: var(--verde); }
+
+html[data-tema="oscuro"] .btn-secundario {
+  color: var(--verde);
+  border-color: var(--verde);
+}
+html[data-tema="oscuro"] .btn-secundario:hover { background: var(--verde-claro); }
+html[data-tema="oscuro"] .btn-peligro:hover { background: #4A2018; }
+html[data-tema="oscuro"] .btn-primario:hover { background: #5E9C85; }
+
+html[data-tema="oscuro"] .campo input,
+html[data-tema="oscuro"] .campo select,
+html[data-tema="oscuro"] .campo textarea {
+  background: #0C4A44;
+  color: var(--texto);
+  border-color: var(--borde);
+}
+html[data-tema="oscuro"] .campo input::placeholder { color: #6FA395; }
+html[data-tema="oscuro"] .campo input:focus,
+html[data-tema="oscuro"] .campo select:focus,
+html[data-tema="oscuro"] .campo textarea:focus { border-color: var(--verde); }
+
+html[data-tema="oscuro"] .alerta-error {
+  background: #4A2018;
+  color: var(--rojo);
+  border-color: #6E3A2F;
+}
+html[data-tema="oscuro"] .alerta-ok {
+  background: var(--verde-claro);
+  color: #CFEADD;
+  border-color: #1C6A61;
+}
+
+html[data-tema="oscuro"] .login-error {
+  background: #4A2018;
+  color: var(--rojo);
+  border-color: #6E3A2F;
+}
+
+html[data-tema="oscuro"] .tabla-envoltorio,
+html[data-tema="oscuro"] .tarjeta-resumen {
+  background: var(--blanco);
+  box-shadow: var(--sombra);
+}
+html[data-tema="oscuro"] .tabla th { background: #083630; }
+html[data-tema="oscuro"] .tabla td { border-bottom-color: var(--borde); }
+html[data-tema="oscuro"] .tabla tbody tr:hover { background: #10534C; }
+
+html[data-tema="oscuro"] .chip-pendiente { background: #4A3A10; color: var(--amber); }
+html[data-tema="oscuro"] .chip-aprobado { background: var(--verde-claro); color: #CFEADD; }
+html[data-tema="oscuro"] .chip-rechazado { background: #4A2018; color: var(--rojo); }
+
+html[data-tema="oscuro"] .modal-caja {
+  background: var(--blanco);
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+}
+html[data-tema="oscuro"] .modal-cerrar:hover { color: var(--texto); }
+
+html[data-tema="oscuro"] .panel-lateral { background: #083630; }
+html[data-tema="oscuro"] .nav-item.activo { background: #4E7D6A; }
+html[data-tema="oscuro"] .panel-logotipo-caja {
+  background: linear-gradient(145deg, #4E7D6A, #2E6653);
+}
+
+html[data-tema="oscuro"] .tarjeta-resumen .numero { color: var(--texto); }
+html[data-tema="oscuro"] .tarjeta-resumen.pendiente .numero { color: var(--amber); }
+html[data-tema="oscuro"] .tarjeta-resumen.aprobado .numero { color: var(--verde); }
+html[data-tema="oscuro"] .tarjeta-resumen.rechazado .numero { color: var(--rojo); }
+html[data-tema="oscuro"] .tarjeta-resumen .etiqueta { color: var(--gris); }
+
+html[data-tema="oscuro"] .voucher-caja { background: #0C4A44; }
+
+html[data-tema="oscuro"] .detalle-campo .k { color: var(--gris); }
+html[data-tema="oscuro"] .paginacion { color: var(--gris); }
+
+html[data-tema="oscuro"] .gestor-fila { border-bottom-color: var(--borde); }
+html[data-tema="oscuro"] .gestor-info .extra { color: var(--gris); }
+
+html[data-tema="oscuro"] .login-card {
+  background: var(--blanco);
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.45);
+}
+
+html[data-tema="oscuro"] .login-pie { color: var(--gris); }
+
+/* ===== Botón del tema ===== */
+html[data-tema="oscuro"] .btn-tema {
+  color: var(--verde);
+  border-color: var(--borde);
+}
+html[data-tema="oscuro"] .btn-tema:hover { background: var(--verde-claro); }

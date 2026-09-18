@@ -72,6 +72,13 @@
 /* ===== Contenido ===== */
 .panel-contenido { flex: 1; padding: 28px 32px; max-width: 1400px; }
 
+.panel-cabecera {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  margin-bottom: 18px;
+}
+
 .seccion-titulo { font-size: 21px; font-weight: 800; color: var(--verde-oscuro); margin-bottom: 4px; }
 .seccion-sub { font-size: 13px; color: var(--gris); margin-bottom: 22px; }
 

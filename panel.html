@@ -9,6 +9,7 @@
   <link href="https://fonts.googleapis.com/css2?family=Sora:wght@500;700;800&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
   <link rel="icon" href="https://files.catbox.moe/zftv8w.png">
   <link rel="stylesheet" href="css/base.css">
+  <link rel="stylesheet" href="css/dark.css">
   <link rel="stylesheet" href="css/panel.css">
 </head>
 <body>
@@ -40,6 +41,10 @@
     </aside>
 
     <main class="panel-contenido">
+      <div class="panel-cabecera">
+        <div></div>
+        <button type="button" class="btn-tema" aria-label="Cambiar tema"></button>
+      </div>
       <div id="seccion-resumen" class="seccion"></div>
       <div id="seccion-inscripciones" class="seccion oculto"></div>
       <div id="seccion-organizadores" class="seccion oculto"></div>
@@ -53,6 +58,7 @@
   <script src="js/config.js"></script>
   <script src="js/api.js"></script>
   <script src="js/auth.js"></script>
+  <script src="js/tema.js"></script>
   <script src="js/secciones/resumen.js"></script>
   <script src="js/secciones/inscripciones.js"></script>
   <script src="js/secciones/organizadores.js"></script>
