@@ -1,8 +1,6 @@
 // Sección Inscripciones: tabla con filtros, paginación y modal de detalle.
 (function () {
   const estado = { filtro: '', tipo: '', busqueda: '', pagina: 1, tamano: 20, vista: 'todos' };
-  let filasIntegrantes = [0];
-  let siguienteIntegrante = 1;
 
   const esc = function (s) { return String(s == null ? '' : s).replace(/[&<>"']/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]; }); };
 
@@ -339,38 +337,36 @@
   // ---------- Registro manual ----------
 
   async function abrirNuevaInscripcion() {
-    filasIntegrantes = [0];
-    siguienteIntegrante = 1;
     const modal = document.getElementById('modal');
     modal.innerHTML =
       '<div class="modal-caja">' +
         '<div class="modal-titulo"><span>Nueva inscripción (registro manual)</span>' +
           '<button class="modal-cerrar" onclick="CerrarModal()">×</button></div>' +
         '<div class="detalle-grid">' +
-          '<label class="campo"><span>Tipo *</span><select id="m-tipo">' +
+          '<label class="campo" style="grid-column:1/-1"><span>Tipo *</span><select id="m-tipo">' +
             '<option value="Estudiante">Estudiante</option>' +
             '<option value="Grupo10">Grupo de 10</option>' +
             '<option value="Egresado">Egresado</option></select></label>' +
-          '<label class="campo"><span>Nombres *</span><input id="m-nombres"></label>' +
-          '<label class="campo"><span>Apellido paterno</span><input id="m-app"></label>' +
-          '<label class="campo"><span>Apellido materno</span><input id="m-apm"></label>' +
-          '<label class="campo"><span>Código</span><input id="m-codigo"></label>' +
-          '<label class="campo"><span>DNI *</span><input id="m-dni" maxlength="8"></label>' +
-          '<label class="campo"><span>Universidad</span><input id="m-universidad"></label>' +
-          '<label class="campo"><span>Facultad / Institución</span><input id="m-facultad"></label>' +
-          '<label class="campo"><span>Celular</span><input id="m-celular"></label>' +
-          '<label class="campo"><span>ID de grupo</span><input id="m-grupo"></label>' +
+
+          '<label class="campo" id="w-nombres"><span>Nombres *</span><input id="m-nombres"></label>' +
+          '<label class="campo" id="w-app"><span>Apellido paterno</span><input id="m-app"></label>' +
+          '<label class="campo" id="w-apm"><span>Apellido materno</span><input id="m-apm"></label>' +
+          '<label class="campo" id="w-dni"><span>DNI *</span><input id="m-dni" maxlength="8"></label>' +
+          '<label class="campo" id="w-celular"><span>Celular</span><input id="m-celular"></label>' +
+          '<label class="campo" id="w-codigo" style="display:none"><span>Código (6 díg.)</span><input id="m-codigo" maxlength="6"></label>' +
+          '<label class="campo" id="w-universidad" style="display:none"><span>Universidad</span><input id="m-universidad"></label>' +
+          '<label class="campo" id="w-facultad" style="display:none"><span>Facultad</span><input id="m-facultad" value="Ciencias Biológicas"></label>' +
+          '<label class="campo" id="w-institucion" style="display:none"><span>Institución *</span><input id="m-institucion" placeholder="Ej. Colegio / Instituto"></label>' +
+
           '<div id="m-grupo-caja" style="display:none;grid-column:1/-1">' +
-            '<h3 class="seccion-titulo" style="font-size:14px;margin:14px 0 8px">Integrantes del grupo</h3>' +
+            '<h3 class="seccion-titulo" style="font-size:14px;margin:14px 0 8px">Integrantes del grupo (10) · un solo voucher</h3>' +
             '<div class="tabla-envoltorio"><table class="tabla">' +
-              '<thead><tr><th>N°</th><th>DNI</th><th>Nombres</th><th>Ap. paterno</th><th>Ap. materno</th><th></th></tr></thead>' +
+              '<thead><tr><th>N°</th><th>Nombres</th><th>Ap. paterno</th><th>Ap. materno</th><th>Universidad</th><th>Facultad</th><th>Código</th><th>DNI</th><th>Celular</th></tr></thead>' +
               '<tbody id="tbody-integrantes"></tbody>' +
             '</table></div>' +
-            '<div class="barra-acciones" style="justify-content:flex-start;margin-top:8px">' +
-              '<button class="btn-secundario btn-chico" id="btnAgregarIntegrante">+ Agregar integrante</button>' +
-              '<span id="contadorIntegrantes" class="seccion-sub" style="margin:0">1 de 10</span>' +
-            '</div>' +
           '</div>' +
+
+          '<label class="campo"><span>ID de grupo</span><input id="m-grupo"></label>' +
           '<label class="campo"><span>Monto verificado (S/.)</span><input id="m-monto"></label>' +
           '<label class="campo"><span>Tipo de pago</span><input id="m-pago"></label>' +
           '<label class="campo"><span>N° transacción</span><input id="m-nro"></label>' +
@@ -383,51 +379,53 @@
         '</div>' +
       '</div>';
 
-    document.getElementById('m-tipo').addEventListener('change', function () {
-      const caja = document.getElementById('m-grupo-caja');
-      caja.style.display = this.value === 'Grupo10' ? 'block' : 'none';
-      if (this.value === 'Grupo10') renderIntegrantes();
-    });
+    renderIntegrantes();
+    aplicarTipo('Estudiante');
 
-    document.getElementById('btnAgregarIntegrante').addEventListener('click', function () {
-      if (filasIntegrantes.length >= 9) return;
-      filasIntegrantes.push(siguienteIntegrante++);
-      renderIntegrantes();
-    });
-
+    document.getElementById('m-tipo').addEventListener('change', function () { aplicarTipo(this.value); });
     document.getElementById('btnGuardarNuevo').addEventListener('click', guardarNuevaInscripcion);
     modal.classList.remove('oculto');
+  }
+
+  function aplicarTipo(t) {
+    const esGrupo = t === 'Grupo10';
+    const esEst = t === 'Estudiante';
+    const esEgr = t === 'Egresado';
+
+    ['w-nombres', 'w-app', 'w-apm', 'w-dni', 'w-celular'].forEach(function (id) {
+      document.getElementById(id).style.display = esGrupo ? 'none' : '';
+    });
+    ['w-codigo', 'w-universidad', 'w-facultad'].forEach(function (id) {
+      document.getElementById(id).style.display = esEst ? '' : 'none';
+    });
+    document.getElementById('w-institucion').style.display = esEgr ? '' : 'none';
+    document.getElementById('m-grupo-caja').style.display = esGrupo ? 'block' : 'none';
   }
 
   function renderIntegrantes() {
     const tbody = document.getElementById('tbody-integrantes');
     if (!tbody) return;
-    tbody.innerHTML = filasIntegrantes.map(function (k) {
-      return '<tr>' +
-        '<td>' + (k + 2) + '</td>' +
-        '<td><input id="mi-' + k + '-dni" maxlength="8"></td>' +
-        '<td><input id="mi-' + k + '-nombres"></td>' +
-        '<td><input id="mi-' + k + '-app"></td>' +
-        '<td><input id="mi-' + k + '-apm"></td>' +
-        '<td><button type="button" class="btn-secundario btn-chico" data-quitar="' + k + '">×</button></td>' +
-      '</tr>';
-    }).join('');
-
-    tbody.querySelectorAll('[data-quitar]').forEach(function (btn) {
-      btn.addEventListener('click', function () {
-        filasIntegrantes = filasIntegrantes.filter(function (x) { return x !== parseInt(btn.getAttribute('data-quitar'), 10); });
-        renderIntegrantes();
-      });
-    });
-
-    const contador = document.getElementById('contadorIntegrantes');
-    if (contador) contador.textContent = (filasIntegrantes.length + 1) + ' de 10';
-    const btnAdd = document.getElementById('btnAgregarIntegrante');
-    if (btnAdd) btnAdd.disabled = filasIntegrantes.length >= 9;
+    let html = '';
+    for (let i = 0; i < 10; i++) {
+      html +=
+        '<tr>' +
+          '<td>' + (i + 1) + '</td>' +
+          '<td><input id="gi-' + i + '-nombres"></td>' +
+          '<td><input id="gi-' + i + '-app"></td>' +
+          '<td><input id="gi-' + i + '-apm"></td>' +
+          '<td><input id="gi-' + i + '-uni" placeholder="UNSAAC / Otra"></td>' +
+          '<td><input id="gi-' + i + '-fac" value="Ciencias Biológicas"></td>' +
+          '<td><input id="gi-' + i + '-cod" maxlength="6"></td>' +
+          '<td><input id="gi-' + i + '-dni" maxlength="8"></td>' +
+          '<td><input id="gi-' + i + '-cel"></td>' +
+        '</tr>';
+    }
+    tbody.innerHTML = html;
   }
 
   async function guardarNuevaInscripcion() {
     const g = document.getElementById;
+    const tipo = g('m-tipo').value;
     const archivo = g('m-voucher').files[0];
     let voucherBase64 = '';
     if (archivo) {
@@ -435,16 +433,8 @@
       catch (e) { return notificar('No se pudo leer el voucher.'); }
     }
 
-    const datos = {
-      tipo: g('m-tipo').value,
-      nombres: g('m-nombres').value.trim(),
-      apellidoPaterno: g('m-app').value.trim(),
-      apellidoMaterno: g('m-apm').value.trim(),
-      codigo: g('m-codigo').value.trim(),
-      dni: g('m-dni').value.trim(),
-      universidad: g('m-universidad').value.trim(),
-      facultadInstitucion: g('m-facultad').value.trim(),
-      celular: g('m-celular').value.trim(),
+    const base = {
+      tipo: tipo,
       grupoId: g('m-grupo').value.trim(),
       montoVerificado: g('m-monto').value.trim(),
       tipoPago: g('m-pago').value.trim(),
@@ -452,23 +442,41 @@
       voucher: voucherBase64
     };
 
-    if (datos.tipo === 'Grupo10') {
-      const integrantes = filasIntegrantes
-        .map(function (k) {
-          return {
-            dni: g('mi-' + k + '-dni').value.trim(),
-            nombres: g('mi-' + k + '-nombres').value.trim(),
-            apellidoPaterno: g('mi-' + k + '-app').value.trim(),
-            apellidoMaterno: g('mi-' + k + '-apm').value.trim()
-          };
-        })
-        .filter(function (m) { return m.dni || m.nombres; });
-      if (integrantes.length + 1 > 10) {
-        const aviso = document.getElementById('avisoNuevo');
-        aviso.innerHTML = '<div class="alerta alerta-error">El grupo no puede superar 10 integrantes (representante + 9 filas).</div>';
-        return;
+    let datos;
+    if (tipo === 'Grupo10') {
+      const integrantes = [];
+      for (let i = 0; i < 10; i++) {
+        integrantes.push({
+          dni: g('gi-' + i + '-dni').value.trim(),
+          nombres: g('gi-' + i + '-nombres').value.trim(),
+          apellidoPaterno: g('gi-' + i + '-app').value.trim(),
+          apellidoMaterno: g('gi-' + i + '-apm').value.trim(),
+          codigo: g('gi-' + i + '-cod').value.trim(),
+          universidad: g('gi-' + i + '-uni').value.trim(),
+          facultad: g('gi-' + i + '-fac').value.trim(),
+          celular: g('gi-' + i + '-cel').value.trim()
+        });
       }
-      datos.integrantes = integrantes;
+      for (let i = 0; i < integrantes.length; i++) {
+        if (!integrantes[i].dni || !integrantes[i].nombres) {
+          const aviso = document.getElementById('avisoNuevo');
+          aviso.innerHTML = '<div class="alerta alerta-error">Integrante N°' + (i + 1) + ': completa al menos DNI y Nombres.</div>';
+          return;
+        }
+      }
+      datos = Object.assign({ integrantes: integrantes }, base);
+    } else {
+      const esEgr = tipo === 'Egresado';
+      datos = Object.assign({
+        nombres: g('m-nombres').value.trim(),
+        apellidoPaterno: g('m-app').value.trim(),
+        apellidoMaterno: g('m-apm').value.trim(),
+        dni: g('m-dni').value.trim(),
+        celular: g('m-celular').value.trim(),
+        codigo: esEgr ? '' : g('m-codigo').value.trim(),
+        universidad: esEgr ? '' : g('m-universidad').value.trim(),
+        facultadInstitucion: esEgr ? g('m-institucion').value.trim() : g('m-facultad').value.trim()
+      }, base);
     }
 
     const r = await apiLlamada('registrarManual', { datos: datos });
