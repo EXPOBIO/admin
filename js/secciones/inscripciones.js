@@ -2,6 +2,7 @@
 (function () {
   const estado = { filtro: '', tipo: '', busqueda: '', pagina: 1, tamano: 20, vista: 'todos' };
   let timerBusqueda = null;
+  let revPintar = 0;
 
   const esc = function (s) { return String(s == null ? '' : s).replace(/[&<>"']/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]; }); };
 
@@ -39,7 +40,7 @@
         '<table class="tabla">' +
           '<thead><tr>' +
             '<th>ID</th><th>Fecha</th><th>Tipo</th><th>Nombres</th>' +
-            '<th>Código</th><th>Universidad</th><th>DNI</th><th>Estado</th>' +
+            '<th>Código</th><th>Universidad</th><th>DNI</th><th>Estado</th><th>Acciones</th>' +
           '</tr></thead>' +
           '<tbody id="tabla-inscripciones"></tbody>' +
         '</table>' +
@@ -90,14 +91,16 @@
   }
 
   async function pintar() {
+    const miRev = ++revPintar;
     const tb = document.getElementById('tabla-inscripciones');
     if (!tb) return;
-    tb.innerHTML = '<tr><td colspan="8">Cargando…</td></tr>';
+    tb.innerHTML = '<tr><td colspan="9">Cargando…</td></tr>';
 
     const r = await apiLlamada('listarInscripciones', { estado: estado.filtro, tipo: estado.tipo, busqueda: estado.busqueda, pagina: estado.pagina, tamano: estado.tamano, vista: estado.vista });
-    if (!r.ok) { tb.innerHTML = '<tr><td colspan="8" style="color:var(--rojo)">' + (r.mensaje || 'Error') + '</td></tr>'; return; }
+    if (miRev !== revPintar) return;
+    if (!r.ok) { tb.innerHTML = '<tr><td colspan="9" style="color:var(--rojo)">' + (r.mensaje || 'Error') + '</td></tr>'; return; }
 
-    if (!r.inscripciones.length) { tb.innerHTML = '<tr><td colspan="8">No hay inscripciones.</td></tr>'; return; }
+    if (!r.inscripciones.length) { tb.innerHTML = '<tr><td colspan="9">No hay inscripciones.</td></tr>'; return; }
 
     const chips = { pendiente: 'chip-pendiente', aprobado: 'chip-aprobado', rechazado: 'chip-rechazado' };
 
@@ -108,11 +111,17 @@
       const tipoCelda = i.esGrupo
         ? 'Grupo de 10 <span class="chip chip-aprobado" title="Integrantes">×' + i.cantidad + '</span>'
         : i.tipo;
+      const est = String(i.estado || '').toLowerCase();
+      const acciones =
+        (est !== 'aprobado' ? '<button class="btn-primario btn-chico" data-estado="aprobado" title="Aprobar">Aprobar</button>' : '') +
+        (est !== 'rechazado' ? '<button class="btn-peligro btn-chico" data-estado="rechazado" title="Rechazar">Rechazar</button>' : '') +
+        (est !== 'pendiente' ? '<button class="btn-secundario btn-chico" data-estado="pendiente" title="Marcar como pendiente">Pendiente</button>' : '');
       return '<tr class="fila-datos" data-id="' + i.id + '" data-grupo="' + (i.grupoId || '') + '" data-esgrupo="' + (i.esGrupo ? '1' : '0') + '">' +
         '<td>' + (i.esGrupo ? i.grupoId : i.id) + '</td><td>' + fecha + '</td><td>' + tipoCelda + '</td>' +
         '<td>' + nombre + '</td><td>' + (i.codigo || '—') + '</td>' +
         '<td>' + (i.universidad || '—') + '</td><td>' + (i.dni || '—') + '</td>' +
         '<td><span class="chip ' + chip + '">' + i.estado + '</span></td>' +
+        '<td class="tabla-acciones">' + (acciones || '—') + '</td>' +
       '</tr>';
     }).join('');
 
@@ -120,6 +129,12 @@
     tb.querySelectorAll('tr.fila-datos').forEach(function (tr) {
       tr.addEventListener('click', function () {
         abrirDetalle(tr.getAttribute('data-id'), tr.getAttribute('data-grupo'), tr.getAttribute('data-esgrupo') === '1');
+      });
+      tr.querySelectorAll('[data-estado]').forEach(function (btn) {
+        btn.addEventListener('click', function (ev) {
+          ev.stopPropagation();
+          cambiarEstadoRapido(tr.getAttribute('data-id'), btn.getAttribute('data-estado'));
+        });
       });
     });
 
@@ -146,6 +161,24 @@
 
   // ---------- Modal de detalle ----------
 
+  function htmlVoucher(url, b64) {
+    const u = String(url || '').trim();
+    if (!u) return '<div class="alerta alerta-error">Sin voucher registrado.</div>';
+    const esImagen = b64 && b64.mimeType && b64.mimeType.indexOf('image/') === 0;
+    const medio = esImagen
+      ? '<img class="voucher-img" src="data:' + b64.mimeType + ';base64,' + b64.base64 + '" alt="Voucher">'
+      : (b64
+          ? '<iframe class="voucher-pdf" src="data:' + b64.mimeType + ';base64,' + b64.base64 + '"></iframe>'
+          : '<div class="alerta alerta-ok">Voucher guardado en Drive (celda con enlace).</div>');
+    const barra =
+      '<div class="voucher-toolbar">' +
+        (b64 && b64.nombre ? '<span class="voucher-nombre">' + esc(b64.nombre) + '</span>' : '') +
+        '<a class="btn-secundario btn-chico" href="' + u + '" target="_blank" rel="noopener">Abrir en Drive</a>' +
+        (b64 ? '<a class="btn-secundario btn-chico" data-voucher-desc>Descargar</a>' : '') +
+      '</div>';
+    return '<div class="voucher-caja">' + medio + barra + '</div>';
+  }
+
   async function abrirDetalle(id, grupoId, esGrupo) {
     const body = esGrupo && grupoId ? { grupoId: grupoId } : { id: id };
     const r = await apiLlamada('obtenerInscripcion', body);
@@ -153,9 +186,7 @@
 
     const i = r.inscripcion;
     const modal = document.getElementById('modal');
-    const voucher = i.Voucher
-      ? '<div class="voucher-caja"><img class="voucher-img" src="' + (r.voucherBase64 ? 'data:' + r.voucherBase64.mimeType + ';base64,' + r.voucherBase64.base64 : i.Voucher) + '" alt="Voucher"></div>'
-      : '<div class="alerta alerta-error">Sin voucher registrado.</div>';
+    const voucher = htmlVoucher(i.Voucher, r.voucherBase64);
 
     const campos = [
       ['Nombres', i.Nombres], ['Apellidos', (i['Apellido paterno'] || '') + ' ' + (i['Apellido materno'] || '')],
@@ -217,6 +248,21 @@
       '</div>';
 
     const targetId = r.esGrupo ? (i.ID || '') : i.ID;
+
+    modal.querySelectorAll('[data-voucher-desc]').forEach(function (a) {
+      a.addEventListener('click', function () {
+        const b = r.voucherBase64;
+        if (!b) return;
+        try {
+          const bin = atob(b.base64);
+          const arr = new Uint8Array(bin.length);
+          for (let n = 0; n < bin.length; n++) arr[n] = bin.charCodeAt(n);
+          a.href = URL.createObjectURL(new Blob([arr], { type: b.mimeType }));
+          a.download = b.nombre || 'voucher';
+        } catch (e) { /* fallback al enlace de Drive */ }
+      });
+    });
+
     document.getElementById('btnAprobar').addEventListener('click', function () { aplicarEstado(targetId, r.grupoId, 'aprobado'); });
     document.getElementById('btnRechazar').addEventListener('click', function () {
       aplicarEstado(targetId, r.grupoId, 'rechazado');
@@ -349,6 +395,14 @@
     }
   }
 
+  async function cambiarEstadoRapido(id, estadoNuevo) {
+    const r = await apiLlamada('cambiarEstado', { id: id, estado: estadoNuevo });
+    notificar(r.ok ? '✓ ' + (r.mensaje || 'Estado actualizado.') : (r.mensaje || 'Error al guardar.'));
+    if (!r.ok) return;
+    await Promise.all([pintar(), pintarResumenTop()]);
+    actualizarResumenSiVisible();
+  }
+
   // ---------- Registro manual ----------
 
   async function abrirNuevaInscripcion() {
@@ -390,7 +444,7 @@
             '<option value="Efectivo">Efectivo</option>' +
             '<option value="Otro">Otro</option></select></label>' +
           '<label class="campo" id="w-m-nro"><span>N° transacción</span><input id="m-nro" placeholder="Últimos dígitos de la operación"></label>' +
-          '<label class="campo" style="grid-column:1/-1"><span>Voucher (imagen del comprobante)</span><input type="file" id="m-voucher" accept="image/*"></label>' +
+          '<label class="campo" style="grid-column:1/-1"><span>Voucher (imagen o PDF)</span><input type="file" id="m-voucher" accept="image/*,application/pdf"></label>' +
         '</div>' +
         '<div id="avisoNuevo"></div>' +
         '<div class="barra-acciones" style="justify-content:flex-end">' +
@@ -456,8 +510,8 @@
     const archivo = g('m-voucher').files[0];
     let voucherBase64 = '';
     if (archivo) {
-      if (archivo.type && archivo.type.indexOf('image/') !== 0) {
-        return notificar('El comprobante debe ser una imagen (JPG, PNG o WEBP).');
+      if (archivo.type && archivo.type.indexOf('image/') !== 0 && archivo.type !== 'application/pdf') {
+        return notificar('El comprobante debe ser una imagen (JPG, PNG, WEBP) o un PDF.');
       }
       try { voucherBase64 = await leerBase64(archivo); }
       catch (e) { return notificar('No se pudo leer el voucher.'); }

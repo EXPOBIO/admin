@@ -48,34 +48,41 @@
     const s = r.resumen;
     const e = s.porEstado || {};
     const html = [];
+    const mini = function (num, etiqueta, cls) {
+      return '<div class="mini-resumen ' + (cls || '') + '">' +
+        '<span class="mini-numero">' + S(num) + '</span>' +
+        '<span class="mini-etiqueta">' + etiqueta + '</span>' +
+      '</div>';
+    };
 
-    // Bloque principal: aprobados.
-    html.push('<h3 class="resumen-grupo-titulo">Aprobados</h3>');
-    html.push(bloqueEstado('Inscritos aprobados', e.aprobado || {}, 'bloque-aprobado', s.dinero.total));
+    // 1) Visión general: los números que importan de un vistazo.
+    html.push('<h3 class="resumen-grupo-titulo">Visión general</h3>');
+    html.push('<div class="resumen-minigrid">');
+    html.push(mini((e.aprobado || {}).personas, 'Aprobados', 'miniaprobado'));
+    html.push(mini((e.pendiente || {}).personas, 'Pendientes', 'minipendiente'));
+    html.push(mini((e.rechazado || {}).personas, 'Rechazados', 'mini-rechazado'));
+    html.push(mini(s.total, 'Inscripciones', ''));
+    html.push(mini((s.porTipo && s.porTipo.Grupo10) || 0, 'Grupos de 10', 'minigrupo'));
+    html.push(mini(s.dinero && s.dinero.total, 'Verificado (S/)', 'miniaprobado'));
+    html.push('</div>');
 
-    // Pendientes.
+    // 2) Por revisar: lo primero sobre lo que el comité debe actuar.
     html.push('<h3 class="resumen-grupo-titulo" style="margin-top:26px">Por revisar</h3>');
     html.push(bloqueEstado('Pendientes de revisión', e.pendiente || {}, 'bloque-pendiente', s.dinero.pendiente));
 
-    // Composición: tipos, grupos y rechazados.
+    // 3) Inscritos aprobados.
+    html.push('<h3 class="resumen-grupo-titulo" style="margin-top:26px">Inscritos aprobados</h3>');
+    html.push(bloqueEstado('Inscritos aprobados', e.aprobado || {}, 'bloque-aprobado', s.dinero.total));
+
+    // 4) Composición: tipos, grupos y rechazados.
     html.push('<h3 class="resumen-grupo-titulo" style="margin-top:26px">Composición</h3>');
     html.push('<div class="resumen-minigrid">');
     (s.porTipo ? Object.keys(s.porTipo) : []).forEach(function (t) {
       const cls = String(t).toLowerCase() === 'grupo10' ? 'minigrupo' : 'miniindiv';
-      html.push(
-        '<div class="mini-resumen ' + cls + '">' +
-          '<span class="mini-numero">' + S(s.porTipo[t]) + '</span>' +
-          '<span class="mini-etiqueta">' + t + '</span>' +
-        '</div>'
-      );
+      html.push(mini(s.porTipo[t], t, cls));
     });
     const re = e.rechazado || {};
-    html.push(
-      '<div class="mini-resumen mini-rechazado">' +
-        '<span class="mini-numero">' + S(re.personas) + '</span>' +
-        '<span class="mini-etiqueta">Rechazados</span>' +
-      '</div>'
-    );
+    html.push(mini(re.personas, 'Rechazados', 'mini-rechazado'));
     html.push('</div>');
 
     // En observación.

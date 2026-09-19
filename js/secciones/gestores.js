@@ -62,7 +62,10 @@
           '<div class="extra">' + (g.comision || '—') + '</div>' +
         '</div>' +
         (esAdmin && !mismo ?
-          '<button class="btn-secundario btn-chico" data-toggle="' + g.usuario + '">' + (activo ? 'Desactivar' : 'Activar') + '</button>' : '') +
+          '<span class="gestor-acciones">' +
+            '<button class="btn-secundario btn-chico" data-toggle="' + g.usuario + '">' + (activo ? 'Desactivar' : 'Activar') + '</button>' +
+            '<button class="btn-peligro btn-chico" data-borrar="' + g.usuario + '">Eliminar</button>' +
+          '</span>' : '') +
       '</div>';
     }).join('');
 
@@ -72,6 +75,16 @@
         const proximo = btn.textContent === 'Desactivar' ? 'no' : 'si';
         if (!confirm('¿' + btn.textContent + ' al gestor "' + usuario + '"?')) return;
         const r = await apiLlamada('actualizarGestor', { usuario: usuario, activo: proximo });
+        aviso(r);
+        if (r.ok) pintar();
+      });
+    });
+
+    div.querySelectorAll('[data-borrar]').forEach(function (btn) {
+      btn.addEventListener('click', async function () {
+        const usuario = btn.getAttribute('data-borrar');
+        if (!confirm('¿ELIMINAR por completo al gestor "' + usuario + '"?\nEsta acción no se puede deshacer.')) return;
+        const r = await apiLlamada('eliminarGestor', { usuario: usuario });
         aviso(r);
         if (r.ok) pintar();
       });
