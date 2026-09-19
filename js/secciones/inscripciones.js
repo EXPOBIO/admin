@@ -334,6 +334,11 @@
           '<label class="campo"><span>Facultad / Institución</span><input id="m-facultad"></label>' +
           '<label class="campo"><span>Celular</span><input id="m-celular"></label>' +
           '<label class="campo"><span>ID de grupo</span><input id="m-grupo"></label>' +
+          '<div id="m-grupo-caja" style="display:none">' +
+            '<label class="campo" style="grid-column:1/-1"><span>Integrantes del grupo (además del representante)</span>' +
+              '<textarea id="m-integrantes" rows="5" placeholder="DNI,Nombres,Apellido paterno,Apellido materno — uno por línea (hasta 9 líneas)"></textarea></label>' +
+            '<p class="seccion-sub" style="margin:0;grid-column:1/-1">Total esperado: 10 (representante + las líneas de abajo).</p>' +
+          '</div>' +
           '<label class="campo"><span>Monto verificado (S/.)</span><input id="m-monto"></label>' +
           '<label class="campo"><span>Tipo de pago</span><input id="m-pago"></label>' +
           '<label class="campo"><span>N° transacción</span><input id="m-nro"></label>' +
@@ -345,6 +350,10 @@
           '<button class="btn-primario" id="btnGuardarNuevo">Registrar</button>' +
         '</div>' +
       '</div>';
+
+    document.getElementById('m-tipo').addEventListener('change', function () {
+      document.getElementById('m-grupo-caja').style.display = this.value === 'Grupo10' ? 'block' : 'none';
+    });
 
     document.getElementById('btnGuardarNuevo').addEventListener('click', guardarNuevaInscripcion);
     modal.classList.remove('oculto');
@@ -375,6 +384,22 @@
       numeroTransaccion: g('m-nro').value.trim(),
       voucher: voucherBase64
     };
+
+    if (datos.tipo === 'Grupo10') {
+      const integrantes = (g('m-integrantes').value || '').split('\n')
+        .map(function (linea) {
+          const partes = linea.split(',').map(function (p) { return p.trim(); });
+          return { dni: partes[0] || '', nombres: partes[1] || '', apellidoPaterno: partes[2] || '', apellidoMaterno: partes[3] || '' };
+        })
+        .filter(function (m) { return m.dni || m.nombres; });
+      const total = integrantes.length + 1;
+      if (total > 10) {
+        const aviso = document.getElementById('avisoNuevo');
+        aviso.innerHTML = '<div class="alerta alerta-error">El grupo no puede superar 10 integrantes (representante + 9 líneas).</div>';
+        return;
+      }
+      datos.integrantes = integrantes;
+    }
 
     const r = await apiLlamada('registrarManual', { datos: datos });
     const aviso = document.getElementById('avisoNuevo');
