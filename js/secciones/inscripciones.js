@@ -375,11 +375,16 @@
             '</table></div>' +
           '</div>' +
 
-          '<label class="campo"><span>ID de grupo</span><input id="m-grupo"></label>' +
-          '<label class="campo"><span>Monto verificado (S/.)</span><input id="m-monto"></label>' +
-          '<label class="campo"><span>Tipo de pago</span><input id="m-pago"></label>' +
-          '<label class="campo"><span>N° transacción</span><input id="m-nro"></label>' +
-          '<label class="campo"><span>Voucher (URL de Drive o archivo)</span><input type="file" id="m-voucher" accept="image/*"></label>' +
+          '<label class="campo"><span>Monto recibido (S/.)</span><input type="number" step="0.10" min="0" id="m-monto"></label>' +
+          '<label class="campo"><span>Tipo de pago</span><select id="m-pago">' +
+            '<option value="Yape">Yape</option>' +
+            '<option value="Plin">Plin</option>' +
+            '<option value="BCP">BCP</option>' +
+            '<option value="Transferencia Bancaria">Transferencia Bancaria</option>' +
+            '<option value="Efectivo">Efectivo</option>' +
+            '<option value="Otro">Otro</option></select></label>' +
+          '<label class="campo" id="w-m-nro"><span>N° transacción</span><input id="m-nro" placeholder="Últimos dígitos de la operación"></label>' +
+          '<label class="campo" style="grid-column:1/-1"><span>Voucher (imagen del comprobante)</span><input type="file" id="m-voucher" accept="image/*"></label>' +
         '</div>' +
         '<div id="avisoNuevo"></div>' +
         '<div class="barra-acciones" style="justify-content:flex-end">' +
@@ -392,8 +397,15 @@
     aplicarTipo('Estudiante');
 
     document.getElementById('m-tipo').addEventListener('change', function () { aplicarTipo(this.value); });
+    document.getElementById('m-pago').addEventListener('change', aplicarPagoNuevo);
+    aplicarPagoNuevo();
     document.getElementById('btnGuardarNuevo').addEventListener('click', guardarNuevaInscripcion);
     modal.classList.remove('oculto');
+  }
+
+  function aplicarPagoNuevo() {
+    const esEfectivo = document.getElementById('m-pago').value === 'Efectivo';
+    document.getElementById('w-m-nro').style.display = esEfectivo ? 'none' : '';
   }
 
   function aplicarTipo(t) {
@@ -438,16 +450,19 @@
     const archivo = g('m-voucher').files[0];
     let voucherBase64 = '';
     if (archivo) {
+      if (archivo.type && archivo.type.indexOf('image/') !== 0) {
+        return notificar('El comprobante debe ser una imagen (JPG, PNG o WEBP).');
+      }
       try { voucherBase64 = await leerBase64(archivo); }
       catch (e) { return notificar('No se pudo leer el voucher.'); }
     }
 
+    const esEfectivo = g('m-pago').value === 'Efectivo';
     const base = {
       tipo: tipo,
-      grupoId: g('m-grupo').value.trim(),
       montoVerificado: g('m-monto').value.trim(),
-      tipoPago: g('m-pago').value.trim(),
-      numeroTransaccion: g('m-nro').value.trim(),
+      tipoPago: g('m-pago').value,
+      numeroTransaccion: esEfectivo ? '' : g('m-nro').value.trim(),
       voucher: voucherBase64
     };
 
