@@ -77,8 +77,13 @@
     if (!cuerpo.usuario || cuerpo.clave.length < 6) {
       return aviso({ ok: false, mensaje: 'Usuario vacío o contraseña menor a 6 caracteres.' });
     }
+    const btn = document.getElementById('btnCrearGestor');
+    btn.disabled = true;
+    btn.textContent = 'Creando…';
     const r = await apiLlamada('crearGestor', cuerpo);
     aviso(r);
+    btn.disabled = false;
+    btn.textContent = 'Crear gestor';
     if (r.ok) {
       const g = document.getElementById;
       ['g-usuario', 'g-clave', 'g-comision'].forEach(function (id) { g(id).value = ''; });

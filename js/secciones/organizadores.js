@@ -68,8 +68,13 @@
 
     tb.querySelectorAll('[data-asignar]').forEach(function (btn) {
       btn.addEventListener('click', async function () {
+        btn.disabled = true;
+        const textoOriginal = btn.textContent;
+        btn.textContent = 'Generando…';
         const r = await apiLlamada('asignarIdOrganizador', { dni: btn.getAttribute('data-asignar') });
         alert(r.ok ? 'ID asignado: ' + r.id : (r.mensaje || 'Error'));
+        btn.disabled = false;
+        btn.textContent = textoOriginal;
         if (r.ok) cargar();
       });
     });
@@ -109,8 +114,12 @@
           ? '¿Activar al organizador "' + nombre + '" (pasar a Activo)?'
           : '¿Poner en observación a "' + nombre + '"?';
         if (!confirm(msg)) return;
+        btn.disabled = true;
+        btn.textContent = 'Enviando…';
         const r = await apiLlamada('cambiarEstadoOrganizador', { dni: dni, estado: esObs ? 'activo' : 'observacion' });
         alert(r.ok ? r.mensaje : (r.mensaje || 'Error'));
+        btn.disabled = false;
+        btn.textContent = esObs ? 'Activar' : 'Observación';
         if (r.ok) cargar();
       });
     });
@@ -123,8 +132,12 @@
         if (motivo === null) return;
         if (!motivo.trim()) { alert('Indica un motivo.'); return; }
         if (!confirm('¿Mover a Eliminados? Se borrará del registro de organizadores.')) return;
+        btn.disabled = true;
+        btn.textContent = 'Eliminando…';
         const r = await apiLlamada('eliminarOrganizador', { dni: dni, motivo: motivo.trim() });
         alert(r.ok ? r.mensaje : (r.mensaje || 'Error'));
+        btn.disabled = false;
+        btn.textContent = 'Eliminar';
         if (r.ok) cargar();
       });
     });
@@ -171,6 +184,9 @@
       '</div>';
 
     document.getElementById('btnGuardarOrg').addEventListener('click', async function () {
+      const btn = document.getElementById('btnGuardarOrg');
+      btn.disabled = true;
+      btn.textContent = 'Guardando…';
       const g = document.getElementById;
       const cuerpo = { dni: dni, campo: 'comision', valor: g('o-comision').value.trim() };
       let r = await apiLlamada('actualizarOrganizador', cuerpo);
@@ -185,6 +201,7 @@
       const aviso = document.getElementById('avisoOrg');
       aviso.innerHTML = '<div class="alerta ' + (r.ok ? 'alerta-ok' : 'alerta-error') + '">' + (r.mensaje || '') + '</div>';
       if (r.ok) setTimeout(function () { CerrarModal(); cargar(); }, 700);
+      else { btn.disabled = false; btn.textContent = 'Guardar'; }
     });
 
     modal.classList.remove('oculto');
@@ -213,6 +230,9 @@
       '</div>';
 
     document.getElementById('btnGuardarNuevoOrg').addEventListener('click', async function () {
+      const btn = document.getElementById('btnGuardarNuevoOrg');
+      btn.disabled = true;
+      btn.textContent = 'Registrando…';
       const g = document.getElementById;
       const datos = {
         nombres: g('n-nombres').value.trim(),
@@ -227,6 +247,7 @@
       const aviso = document.getElementById('avisoNuevoOrg');
       aviso.innerHTML = '<div class="alerta ' + (r.ok ? 'alerta-ok' : 'alerta-error') + '">' + (r.mensaje || '') + '</div>';
       if (r.ok) setTimeout(function () { CerrarModal(); cargar(); }, 700);
+      else { btn.disabled = false; btn.textContent = 'Registrar'; }
     });
 
     modal.classList.remove('oculto');

@@ -190,3 +190,38 @@ button { font-family: inherit; cursor: pointer; }
   cursor: pointer;
 }
 .modal-cerrar:hover { color: var(--texto); }
+
+/* ===== Capa de carga (enviando / validando) ===== */
+.capa-carga {
+  position: fixed;
+  inset: 0;
+  z-index: 3000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(35, 79, 64, 0.28);
+  backdrop-filter: blur(2px);
+}
+.capa-carga[hidden] { display: none; }
+.carga-caja {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  background: var(--blanco);
+  color: var(--texto);
+  border: 1px solid var(--borde);
+  padding: 16px 24px;
+  border-radius: 14px;
+  box-shadow: var(--sombra);
+  font-weight: 600;
+  font-size: 14px;
+}
+.carga-anillo {
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  border: 3px solid var(--borde);
+  border-top-color: var(--verde);
+  animation: cargaGira 0.8s linear infinite;
+}
+@keyframes cargaGira { to { transform: rotate(360deg); } }

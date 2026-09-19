@@ -295,6 +295,7 @@
 
     const btn = document.getElementById('btnGuardarEdit');
     btn.disabled = true;
+    btn.textContent = 'Guardando…';
     const r = await apiLlamada('editarInscripcion', { id: id, grupoId: grupoId, campos: campos });
     const aviso = document.getElementById('avisoEdit');
     aviso.innerHTML = '<div class="alerta ' + (r.ok ? 'alerta-ok' : 'alerta-error') + '">' + (r.mensaje || '') + '</div>';
@@ -302,12 +303,14 @@
       setTimeout(function () { CerrarModal(); pintar(); pintarResumenTop(); actualizarResumenSiVisible(); }, 700);
     } else {
       btn.disabled = false;
+      btn.textContent = 'Guardar cambios';
     }
   }
 
   async function eliminarInscripcion(id, grupoId, motivo) {
     const btnEliminar = document.getElementById('btnEliminar');
     btnEliminar.disabled = true;
+    btnEliminar.textContent = 'Eliminando…';
     const r = await apiLlamada('eliminarInscripcion', { id: id, grupoId: grupoId, motivo: motivo });
     const aviso = document.getElementById('avisoAccion');
     aviso.innerHTML = '<div class="alerta ' + (r.ok ? 'alerta-ok' : 'alerta-error') + '">' + (r.mensaje || '') + '</div>';
@@ -315,6 +318,7 @@
       setTimeout(function () { CerrarModal(); pintar(); pintarResumenTop(); actualizarResumenSiVisible(); }, 700);
     } else {
       btnEliminar.disabled = false;
+      btnEliminar.textContent = 'Eliminar';
     }
   }
 
@@ -322,6 +326,9 @@
     const btnAprobar = document.getElementById('btnAprobar');
     const btnRechazar = document.getElementById('btnRechazar');
     btnAprobar.disabled = btnRechazar.disabled = true;
+    const esAprobar = estadoNuevo === 'aprobado';
+    btnAprobar.textContent = esAprobar ? 'Aprobando…' : 'Aprobar';
+    btnRechazar.textContent = esAprobar ? 'Rechazar' : 'Rechazando…';
 
     const r = await apiLlamada('cambiarEstado', { id: id, grupoId: grupoId, estado: estadoNuevo });
     const aviso = document.getElementById('avisoAccion');
@@ -331,6 +338,8 @@
       setTimeout(function () { CerrarModal(); pintar(); pintarResumenTop(); actualizarResumenSiVisible(); }, 700);
     } else {
       btnAprobar.disabled = btnRechazar.disabled = false;
+      btnAprobar.textContent = 'Aprobar';
+      btnRechazar.textContent = 'Rechazar';
     }
   }
 
@@ -479,10 +488,19 @@
       }, base);
     }
 
+    const btnGuardar = document.getElementById('btnGuardarNuevo');
+    btnGuardar.disabled = true;
+    btnGuardar.textContent = 'Registrando…';
+
     const r = await apiLlamada('registrarManual', { datos: datos });
     const aviso = document.getElementById('avisoNuevo');
     aviso.innerHTML = '<div class="alerta ' + (r.ok ? 'alerta-ok' : 'alerta-error') + '">' + (r.mensaje || '') + '</div>';
-    if (r.ok) setTimeout(function () { CerrarModal(); pintar(); pintarResumenTop(); actualizarResumenSiVisible(); }, 800);
+    if (r.ok) {
+      setTimeout(function () { CerrarModal(); pintar(); pintarResumenTop(); actualizarResumenSiVisible(); }, 800);
+    } else {
+      btnGuardar.disabled = false;
+      btnGuardar.textContent = 'Registrar';
+    }
   }
 
   function leerBase64(archivo) {
