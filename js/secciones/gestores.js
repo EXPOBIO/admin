@@ -1,38 +1,43 @@
 // Sección Gestores: crear gestores (todos) y gestionar (solo admin).
 (function () {
   let yo = null;
+  let armado = false;
 
   async function cargar() {
     yo = usuarioGuardado();
-    const esAdmin = yo && String(yo.rol || '').toLowerCase() === 'admin';
 
-    const cont = document.getElementById('seccion-gestores');
-    cont.innerHTML =
-      '<h2 class="seccion-titulo">Gestores</h2>' +
-      '<p class="seccion-sub">Usuarios con acceso al panel' + (esAdmin ? ' · solo administradores editan gestores' : ' · puedes crear nuevos gestores') + '</p>' +
+    if (!armado) {
+      const esAdmin = yo && String(yo.rol || '').toLowerCase() === 'admin';
 
-      '<div class="barra-acciones">' +
-        '<label class="campo"><input type="text" id="g-usuario" placeholder="Usuario" autocomplete="off"></label>' +
-        '<label class="campo"><input type="password" id="g-clave" placeholder="Contraseña (mín 6)"></label>' +
-        '<label class="campo"><input type="text" id="g-comision" placeholder="Comisión (ej. Logística)"></label>' +
-        (esAdmin ? '<label class="campo"><select id="g-rol"><option value="gestor">Gestor</option><option value="admin">Admin</option></select></label>' : '') +
-        '<button class="btn-primario" id="btnCrearGestor">Crear gestor</button>' +
-      '</div>' +
+      const cont = document.getElementById('seccion-gestores');
+      cont.innerHTML =
+        '<h2 class="seccion-titulo">Gestores</h2>' +
+        '<p class="seccion-sub">Usuarios con acceso al panel' + (esAdmin ? ' · solo administradores editan gestores' : ' · puedes crear nuevos gestores') + '</p>' +
 
-      '<div class="tarjeta-resumen" style="padding:10px 18px">' +
-        '<div id="lista-gestores"></div>' +
-      '</div>' +
-      '<div id="avisoGestores"></div>';
+        '<div class="barra-acciones">' +
+          '<label class="campo"><input type="text" id="g-usuario" placeholder="Usuario" autocomplete="off"></label>' +
+          '<label class="campo"><input type="password" id="g-clave" placeholder="Contraseña (mín 6)"></label>' +
+          '<label class="campo"><input type="text" id="g-comision" placeholder="Comisión (ej. Logística)"></label>' +
+          (esAdmin ? '<label class="campo"><select id="g-rol"><option value="gestor">Gestor</option><option value="admin">Admin</option></select></label>' : '') +
+          '<button class="btn-primario" id="btnCrearGestor">Crear gestor</button>' +
+        '</div>' +
 
-    document.getElementById('btnCrearGestor').addEventListener('click', function () {
-      const g = document.getElementById.bind(document);
-      crear({
-        usuario: g('g-usuario').value.trim(),
-        clave: g('g-clave').value,
-        comision: g('g-comision').value.trim(),
-        rol: esAdmin ? g('g-rol').value : 'gestor'
+        '<div class="tarjeta-resumen" style="padding:10px 18px">' +
+          '<div id="lista-gestores"></div>' +
+        '</div>' +
+        '<div id="avisoGestores"></div>';
+
+      document.getElementById('btnCrearGestor').addEventListener('click', function () {
+        const g = document.getElementById.bind(document);
+        crear({
+          usuario: g('g-usuario').value.trim(),
+          clave: g('g-clave').value,
+          comision: g('g-comision').value.trim(),
+          rol: esAdmin ? g('g-rol').value : 'gestor'
+        });
       });
-    });
+      armado = true;
+    }
 
     await pintar();
   }

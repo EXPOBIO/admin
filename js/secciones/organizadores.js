@@ -2,6 +2,7 @@
 (function () {
   let datos = [];
   let filtroCategoria = '';
+  let armado = false;
 
   const S = function (n) { return Number(n || 0).toLocaleString('es-PE'); };
   const esc = function (s) { return String(s == null ? '' : s).replace(/[&<>"']/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]; }); };
@@ -151,16 +152,12 @@
 
   function pintarFiltro() {
     const sel = document.getElementById('filtroCategoria');
-    if (sel.innerHTML) return;
+    if (!sel) return;
     let html = '<option value="">Todas las categorías</option>';
     categorias().forEach(function (c) {
       html += '<option value="' + esc(c) + '"' + (c === filtroCategoria ? ' selected' : '') + '>' + esc(c) + '</option>';
     });
     sel.innerHTML = html;
-    sel.addEventListener('change', function () {
-      filtroCategoria = sel.value;
-      pintarTabla();
-    });
   }
 
   function abrirEdicion(dni) {
@@ -255,22 +252,30 @@
 
   async function cargar() {
     const cont = document.getElementById('seccion-organizadores');
-    cont.innerHTML =
-      '<h2 class="seccion-titulo">Organizadores</h2>' +
-      '<p class="seccion-sub">Comité: gestión por categorías, estados y asignación de IDs</p>' +
-      '<div id="orgResumen"></div>' +
-      '<div class="barra-acciones" style="align-items:end">' +
-        '<label class="campo"><span>Categoría</span><select id="filtroCategoria"></select></label>' +
-        '<button class="btn-primario" id="btnNuevoOrg">+ Agregar organizador</button>' +
-      '</div>' +
-      '<div class="tabla-envoltorio">' +
-        '<table class="tabla">' +
-          '<thead><tr><th>ID</th><th>Nombre</th><th>Código</th><th>DNI</th><th>Celular</th><th>Categoría</th><th>Estado</th><th>Acciones</th></tr></thead>' +
-          '<tbody id="tabla-organizadores"></tbody>' +
-        '</table>' +
-      '</div>';
 
-    document.getElementById('btnNuevoOrg').addEventListener('click', abrirNuevo);
+    if (!armado) {
+      cont.innerHTML =
+        '<h2 class="seccion-titulo">Organizadores</h2>' +
+        '<p class="seccion-sub">Comité: gestión por categorías, estados y asignación de IDs</p>' +
+        '<div id="orgResumen"></div>' +
+        '<div class="barra-acciones" style="align-items:end">' +
+          '<label class="campo"><span>Categoría</span><select id="filtroCategoria"></select></label>' +
+          '<button class="btn-primario" id="btnNuevoOrg">+ Agregar organizador</button>' +
+        '</div>' +
+        '<div class="tabla-envoltorio">' +
+          '<table class="tabla">' +
+            '<thead><tr><th>ID</th><th>Nombre</th><th>Código</th><th>DNI</th><th>Celular</th><th>Categoría</th><th>Estado</th><th>Acciones</th></tr></thead>' +
+            '<tbody id="tabla-organizadores"></tbody>' +
+          '</table>' +
+        '</div>';
+
+      document.getElementById('btnNuevoOrg').addEventListener('click', abrirNuevo);
+      document.getElementById('filtroCategoria').addEventListener('change', function () {
+        filtroCategoria = this.value;
+        pintarTabla();
+      });
+      armado = true;
+    }
 
     const tb = document.getElementById('tabla-organizadores');
     tb.innerHTML = '<tr><td colspan="8">Cargando…</td></tr>';

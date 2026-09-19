@@ -1,6 +1,7 @@
 // Sección Inscripciones: tabla con filtros, paginación y modal de detalle.
 (function () {
   const estado = { filtro: '', tipo: '', busqueda: '', pagina: 1, tamano: 20, vista: 'todos' };
+  let timerBusqueda = null;
 
   const esc = function (s) { return String(s == null ? '' : s).replace(/[&<>"']/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]; }); };
 
@@ -49,7 +50,12 @@
     document.getElementById('f-por-estado').addEventListener('change', function () { estado.filtro = this.value; estado.pagina = 1; pintar(); });
     document.getElementById('f-vista').addEventListener('change', function () { estado.vista = this.value; estado.pagina = 1; pintar(); });
     document.getElementById('f-por-tipo').addEventListener('change', function () { estado.tipo = this.value; estado.pagina = 1; pintar(); });
-    document.getElementById('f-busqueda').addEventListener('input', function () { estado.busqueda = this.value; estado.pagina = 1; pintar(); });
+    document.getElementById('f-busqueda').addEventListener('input', function () {
+      estado.busqueda = this.value;
+      estado.pagina = 1;
+      clearTimeout(timerBusqueda);
+      timerBusqueda = setTimeout(pintar, 300);
+    });
     document.getElementById('btnDescargar').addEventListener('click', descargarCsv);
     document.getElementById('btnNuevo').addEventListener('click', abrirNuevaInscripcion);
 
