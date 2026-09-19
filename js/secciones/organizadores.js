@@ -187,7 +187,7 @@
       const btn = document.getElementById('btnGuardarOrg');
       btn.disabled = true;
       btn.textContent = 'Guardando…';
-      const g = document.getElementById;
+      const g = document.getElementById.bind(document);
       const cuerpo = { dni: dni, campo: 'comision', valor: g('o-comision').value.trim() };
       let r = await apiLlamada('actualizarOrganizador', cuerpo);
       const regs = [
@@ -233,7 +233,7 @@
       const btn = document.getElementById('btnGuardarNuevoOrg');
       btn.disabled = true;
       btn.textContent = 'Registrando…';
-      const g = document.getElementById;
+      const g = document.getElementById.bind(document);
       const datos = {
         nombres: g('n-nombres').value.trim(),
         apellidoPaterno: g('n-app').value.trim(),

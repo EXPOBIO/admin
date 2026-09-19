@@ -278,7 +278,7 @@
   }
 
   async function guardarEdicion(id, grupoId) {
-    const g = document.getElementById;
+    const g = document.getElementById.bind(document);
     const campos = {
       nombres: g('e-nombres').value.trim(),
       apellidoPaterno: g('e-app').value.trim(),
@@ -445,7 +445,7 @@
   }
 
   async function guardarNuevaInscripcion() {
-    const g = document.getElementById;
+    const g = document.getElementById.bind(document);
     const tipo = g('m-tipo').value;
     const archivo = g('m-voucher').files[0];
     let voucherBase64 = '';

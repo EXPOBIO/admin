@@ -25,7 +25,7 @@
       '<div id="avisoGestores"></div>';
 
     document.getElementById('btnCrearGestor').addEventListener('click', function () {
-      const g = document.getElementById;
+      const g = document.getElementById.bind(document);
       crear({
         usuario: g('g-usuario').value.trim(),
         clave: g('g-clave').value,
@@ -85,7 +85,7 @@
     btn.disabled = false;
     btn.textContent = 'Crear gestor';
     if (r.ok) {
-      const g = document.getElementById;
+      const g = document.getElementById.bind(document);
       ['g-usuario', 'g-clave', 'g-comision'].forEach(function (id) { g(id).value = ''; });
       pintar();
     }
