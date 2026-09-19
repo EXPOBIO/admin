@@ -176,6 +176,15 @@
           '</tbody></table></div>'
       : '';
 
+    const verGrupo =
+      r.perteneceGrupo && r.grupoId
+        ? '<button class="btn-secundario" id="btnVerGrupo">Ver integrantes del grupo (' + (r.miembros ? r.miembros.length : '') + ')</button> '
+        : '';
+
+    const cajaMiembros = r.perteneceGrupo
+      ? '<div id="grupoMiembros" style="display:none">' + integrantesHtml + '</div>'
+      : integrantesHtml;
+
     modal.innerHTML =
       '<div class="modal-caja">' +
         '<div class="modal-titulo">' +
@@ -184,7 +193,7 @@
         '</div>' +
 
         voucher +
-        integrantesHtml +
+        cajaMiembros +
 
         '<div class="detalle-grid">' +
           campos.map(function (c) { return '<div class="detalle-campo"><div class="k">' + c[0] + '</div><div class="v">' + (c[1] || '—') + '</div></div>'; }).join('') +
@@ -194,6 +203,7 @@
           '<div style="display:flex;gap:10px;align-items:center">' +
             '<button class="btn-secundario" id="btnAprobar">Aprobar</button>' +
             '<button class="btn-peligro" id="btnRechazar">Rechazar</button>' +
+            verGrupo +
             '<button class="btn-peligro" id="btnEliminar">Eliminar</button>' +
             (i.ID ? '<button class="btn-secundario" id="btnEditar">Editar datos</button>' : '') +
           '</div>' +
@@ -214,6 +224,18 @@
       if (!confirm('¿Mover a Eliminados? Esta acción borrará la fila de Inscripciones.')) return;
       eliminarInscripcion(targetId, r.grupoId, motivo.trim());
     });
+
+    if (document.getElementById('btnVerGrupo')) {
+      document.getElementById('btnVerGrupo').addEventListener('click', function () {
+        const caja = document.getElementById('grupoMiembros');
+        if (!caja) return;
+        const visible = caja.style.display !== 'none';
+        caja.style.display = visible ? 'none' : 'block';
+        this.textContent = visible
+          ? 'Ver integrantes del grupo (' + (r.miembros ? r.miembros.length : '') + ')'
+          : 'Ocultar integrantes';
+      });
+    }
 
     if (document.getElementById('btnEditar')) {
       document.getElementById('btnEditar').addEventListener('click', function () {
