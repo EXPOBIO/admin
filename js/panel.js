@@ -18,7 +18,6 @@ document.addEventListener('DOMContentLoaded', function () {
     { nombre: 'resumen', obj: window.SeccionResumen },
     { nombre: 'inscripciones', obj: window.SeccionInscripciones },
     { nombre: 'organizadores', obj: window.SeccionOrganizadores },
-    { nombre: 'precios', obj: window.SeccionPrecios },
     { nombre: 'gestores', obj: window.SeccionGestores }
   ];
 
@@ -59,7 +58,6 @@ function CerrarModal() {
 
 function notificar(msg) {
   const div = document.getElementById('avisoAccion') ||
-    document.getElementById('avisoPrecios') ||
     document.getElementById('avisoGestores');
   if (div) div.innerHTML = '<div class="alerta alerta-error">' + msg + '</div>';
   else alert(msg);

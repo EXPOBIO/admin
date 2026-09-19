@@ -104,6 +104,11 @@
       btn.addEventListener('click', async function () {
         const dni = btn.getAttribute('data-obs');
         const esObs = btn.textContent === 'Activar';
+        const nombre = btn.getAttribute('data-nombre');
+        const msg = esObs
+          ? '¿Activar al organizador "' + nombre + '" (pasar a Activo)?'
+          : '¿Poner en observación a "' + nombre + '"?';
+        if (!confirm(msg)) return;
         const r = await apiLlamada('cambiarEstadoOrganizador', { dni: dni, estado: esObs ? 'activo' : 'observacion' });
         alert(r.ok ? r.mensaje : (r.mensaje || 'Error'));
         if (r.ok) cargar();

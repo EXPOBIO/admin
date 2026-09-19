@@ -13,7 +13,7 @@ expobio.github.io/admin/   (este repo, frontend estático)
 Google Apps Script "Admin"  ⚠️ SECRETO · NUNCA en este repo
         │  openById(SPREADSHEET_ID)
         ▼
-Google Sheets: Inscripciones · Organizadores · Eliminados · Precios
+Google Sheets: Inscripciones · Organizadores · Eliminados
 ```
 
 El frontend **no contiene secretos**. Todo el backend (`*.gs`) se mantiene
@@ -36,14 +36,14 @@ del Spreadsheet no puede ver ni alterar nada de eso.
 | `js/config.js` | **URL de la Web App** (rellenar al desplegar) |
 | `js/api.js` | Llamadas `fetch` a la API + manejo de sesión |
 | `js/auth.js` | Token e identidad del gestor |
-| `js/secciones/*.js` | Resumen · Inscripciones · Organizadores · Precios · Gestores |
+| `js/secciones/*.js` | Resumen · Inscripciones · Organizadores · Gestores |
 
 ## Puesta a punto (una sola vez)
 
 1. **Crear la Web App**: copia estos `.gs` (viven en `backend_appscript/` de esta carpeta,
    **no subirlos jamás**) a un proyecto de script.google.com:
    `Admin.gs`, `Auth.gs`, `Inscripciones.gs`, `Organizadores.gs`,
-   `Precios.gs`, `Utilidades.gs`.
+   `Utilidades.gs`.
 2. **Crear el primer administrador**: en el editor de Apps Script, en `Auth.gs`
    edita los valores del bloque `ADMIN_INICIAL` (usuario, clave, comisión),
    guarda y ejecuta la función **`crearAdminInicial`** (sin argumentos) desde el
@@ -62,6 +62,5 @@ del Spreadsheet no puede ver ni alterar nada de eso.
 
 - **Resumen**: contadores de inscripciones (total, pendientes, aprobados, rechazados, por tipo) + **dinero aprobado** y desglose por tipo de pago (físico, Yape, Otro medio…). Los **Grupos de 10 cuentan como 1** (comparten un solo voucher), no por integrante.
 - **Inscripciones**: filtrar (estado/tipo/búsqueda), paginar, ver detalle con voucher, aprobar/rechazar (en grupos se aplica al grupo completo), **eliminar (mueve a hoja Eliminados con motivo; en grupos mueve a todos sus integrantes)**, exportar CSV. Selector de vista **"Todos" / "Grupos de 10"**. La hoja Inscripciones **no** tiene columna `MotivoRechazo` (solo existe en Eliminados).
-- **Organizadores**: listado del comité y asignación de IDs (ORG-XXXX).
-- **Precios**: edición de costos por categoría.
+- **Organizadores**: listado del comité y asignación de IDs (ORG-XXXX). Estado Activo/Observación y eliminación con motivo (a hoja "Eliminados Organizadores").
 - **Gestores**: crear usuarios y activar/desactivarlos (solo rol admin).
