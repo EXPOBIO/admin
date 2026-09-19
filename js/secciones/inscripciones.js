@@ -1,6 +1,8 @@
 // Sección Inscripciones: tabla con filtros, paginación y modal de detalle.
 (function () {
   const estado = { filtro: '', tipo: '', busqueda: '', pagina: 1, tamano: 20, vista: 'todos' };
+  let filasIntegrantes = [0];
+  let siguienteIntegrante = 1;
 
   const esc = function (s) { return String(s == null ? '' : s).replace(/[&<>"']/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]; }); };
 
@@ -315,6 +317,8 @@
   // ---------- Registro manual ----------
 
   async function abrirNuevaInscripcion() {
+    filasIntegrantes = [0];
+    siguienteIntegrante = 1;
     const modal = document.getElementById('modal');
     modal.innerHTML =
       '<div class="modal-caja">' +
@@ -334,10 +338,16 @@
           '<label class="campo"><span>Facultad / Institución</span><input id="m-facultad"></label>' +
           '<label class="campo"><span>Celular</span><input id="m-celular"></label>' +
           '<label class="campo"><span>ID de grupo</span><input id="m-grupo"></label>' +
-          '<div id="m-grupo-caja" style="display:none">' +
-            '<label class="campo" style="grid-column:1/-1"><span>Integrantes del grupo (además del representante)</span>' +
-              '<textarea id="m-integrantes" rows="5" placeholder="DNI,Nombres,Apellido paterno,Apellido materno — uno por línea (hasta 9 líneas)"></textarea></label>' +
-            '<p class="seccion-sub" style="margin:0;grid-column:1/-1">Total esperado: 10 (representante + las líneas de abajo).</p>' +
+          '<div id="m-grupo-caja" style="display:none;grid-column:1/-1">' +
+            '<h3 class="seccion-titulo" style="font-size:14px;margin:14px 0 8px">Integrantes del grupo</h3>' +
+            '<div class="tabla-envoltorio"><table class="tabla">' +
+              '<thead><tr><th>N°</th><th>DNI</th><th>Nombres</th><th>Ap. paterno</th><th>Ap. materno</th><th></th></tr></thead>' +
+              '<tbody id="tbody-integrantes"></tbody>' +
+            '</table></div>' +
+            '<div class="barra-acciones" style="justify-content:flex-start;margin-top:8px">' +
+              '<button class="btn-secundario btn-chico" id="btnAgregarIntegrante">+ Agregar integrante</button>' +
+              '<span id="contadorIntegrantes" class="seccion-sub" style="margin:0">1 de 10</span>' +
+            '</div>' +
           '</div>' +
           '<label class="campo"><span>Monto verificado (S/.)</span><input id="m-monto"></label>' +
           '<label class="campo"><span>Tipo de pago</span><input id="m-pago"></label>' +
@@ -352,11 +362,46 @@
       '</div>';
 
     document.getElementById('m-tipo').addEventListener('change', function () {
-      document.getElementById('m-grupo-caja').style.display = this.value === 'Grupo10' ? 'block' : 'none';
+      const caja = document.getElementById('m-grupo-caja');
+      caja.style.display = this.value === 'Grupo10' ? 'block' : 'none';
+      if (this.value === 'Grupo10') renderIntegrantes();
+    });
+
+    document.getElementById('btnAgregarIntegrante').addEventListener('click', function () {
+      if (filasIntegrantes.length >= 9) return;
+      filasIntegrantes.push(siguienteIntegrante++);
+      renderIntegrantes();
     });
 
     document.getElementById('btnGuardarNuevo').addEventListener('click', guardarNuevaInscripcion);
     modal.classList.remove('oculto');
+  }
+
+  function renderIntegrantes() {
+    const tbody = document.getElementById('tbody-integrantes');
+    if (!tbody) return;
+    tbody.innerHTML = filasIntegrantes.map(function (k) {
+      return '<tr>' +
+        '<td>' + (k + 2) + '</td>' +
+        '<td><input id="mi-' + k + '-dni" maxlength="8"></td>' +
+        '<td><input id="mi-' + k + '-nombres"></td>' +
+        '<td><input id="mi-' + k + '-app"></td>' +
+        '<td><input id="mi-' + k + '-apm"></td>' +
+        '<td><button type="button" class="btn-secundario btn-chico" data-quitar="' + k + '">×</button></td>' +
+      '</tr>';
+    }).join('');
+
+    tbody.querySelectorAll('[data-quitar]').forEach(function (btn) {
+      btn.addEventListener('click', function () {
+        filasIntegrantes = filasIntegrantes.filter(function (x) { return x !== parseInt(btn.getAttribute('data-quitar'), 10); });
+        renderIntegrantes();
+      });
+    });
+
+    const contador = document.getElementById('contadorIntegrantes');
+    if (contador) contador.textContent = (filasIntegrantes.length + 1) + ' de 10';
+    const btnAdd = document.getElementById('btnAgregarIntegrante');
+    if (btnAdd) btnAdd.disabled = filasIntegrantes.length >= 9;
   }
 
   async function guardarNuevaInscripcion() {
@@ -386,16 +431,19 @@
     };
 
     if (datos.tipo === 'Grupo10') {
-      const integrantes = (g('m-integrantes').value || '').split('\n')
-        .map(function (linea) {
-          const partes = linea.split(',').map(function (p) { return p.trim(); });
-          return { dni: partes[0] || '', nombres: partes[1] || '', apellidoPaterno: partes[2] || '', apellidoMaterno: partes[3] || '' };
+      const integrantes = filasIntegrantes
+        .map(function (k) {
+          return {
+            dni: g('mi-' + k + '-dni').value.trim(),
+            nombres: g('mi-' + k + '-nombres').value.trim(),
+            apellidoPaterno: g('mi-' + k + '-app').value.trim(),
+            apellidoMaterno: g('mi-' + k + '-apm').value.trim()
+          };
         })
         .filter(function (m) { return m.dni || m.nombres; });
-      const total = integrantes.length + 1;
-      if (total > 10) {
+      if (integrantes.length + 1 > 10) {
         const aviso = document.getElementById('avisoNuevo');
-        aviso.innerHTML = '<div class="alerta alerta-error">El grupo no puede superar 10 integrantes (representante + 9 líneas).</div>';
+        aviso.innerHTML = '<div class="alerta alerta-error">El grupo no puede superar 10 integrantes (representante + 9 filas).</div>';
         return;
       }
       datos.integrantes = integrantes;
