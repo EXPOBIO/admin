@@ -133,7 +133,13 @@
       tr.querySelectorAll('[data-estado]').forEach(function (btn) {
         btn.addEventListener('click', function (ev) {
           ev.stopPropagation();
-          cambiarEstadoRapido(tr.getAttribute('data-id'), btn.getAttribute('data-estado'));
+          const id = tr.getAttribute('data-id');
+          const grupoId = tr.getAttribute('data-grupo') || '';
+          if (btn.getAttribute('data-estado') === 'aprobado') {
+            abrirAprobar(id, grupoId);
+          } else {
+            cambiarEstadoRapido(id, btn.getAttribute('data-estado'));
+          }
         });
       });
     });
@@ -263,7 +269,7 @@
       });
     });
 
-    document.getElementById('btnAprobar').addEventListener('click', function () { aplicarEstado(targetId, r.grupoId, 'aprobado'); });
+    document.getElementById('btnAprobar').addEventListener('click', function () { abrirAprobar(targetId, r.grupoId); });
     document.getElementById('btnRechazar').addEventListener('click', function () {
       aplicarEstado(targetId, r.grupoId, 'rechazado');
     });
@@ -371,6 +377,79 @@
     } else {
       btnEliminar.disabled = false;
       btnEliminar.textContent = 'Eliminar';
+    }
+  }
+
+  // ---------- Aprobación con datos de pago ----------
+
+  function abrirAprobar(id, grupoId) {
+    const modal = document.getElementById('modal');
+    modal.innerHTML =
+      '<div class="modal-caja">' +
+        '<div class="modal-titulo"><span>Aprobar inscripción</span>' +
+          '<button class="modal-cerrar" onclick="CerrarModal()">×</button></div>' +
+        '<p class="seccion-sub">Confirma el pago para aprobar la inscripción.</p>' +
+        '<div class="detalle-grid">' +
+          '<label class="campo"><span>Tipo de pago *</span><select id="ap-pago">' +
+            '<option value="">Selecciona…</option>' +
+            '<option value="Yape">Yape</option>' +
+            '<option value="Plin">Plin</option>' +
+            '<option value="BCP">BCP</option>' +
+            '<option value="Transferencia Bancaria">Transferencia Bancaria</option>' +
+            '<option value="Efectivo">Efectivo</option>' +
+            '<option value="Físico">Físico</option>' +
+            '<option value="Otro">Otro</option></select></label>' +
+          '<label class="campo"><span>Cantidad (S/.) *</span><input type="number" step="0.10" min="0" id="ap-monto" placeholder="Ej. 25.00"></label>' +
+          '<label class="campo" id="w-ap-nro" style="grid-column:1/-1"><span>N° de voucher / transacción *</span><input id="ap-nro" placeholder="Ej. 2309f7a4…"></label>' +
+        '</div>' +
+        '<div id="avisoAprobar"></div>' +
+        '<div class="barra-acciones" style="justify-content:flex-end">' +
+          '<button class="btn-secundario" onclick="CerrarModal()">Cancelar</button>' +
+          '<button class="btn-primario" id="btnConfirmarAprobar">Confirmar aprobación</button>' +
+        '</div>' +
+      '</div>';
+
+    document.getElementById('ap-pago').addEventListener('change', function () {
+      const esSinVoucher = ['Efectivo', 'Físico'].indexOf(this.value) !== -1;
+      document.getElementById('w-ap-nro').style.display = esSinVoucher ? 'none' : '';
+    });
+    document.getElementById('btnConfirmarAprobar').addEventListener('click', function () {
+      confirmarAprobar(id, grupoId);
+    });
+    modal.classList.remove('oculto');
+  }
+
+  async function confirmarAprobar(id, grupoId) {
+    const g = document.getElementById.bind(document);
+    const tipoPago = g('ap-pago').value;
+    const monto = g('ap-monto').value.trim();
+    const nro = g('ap-nro').value.trim();
+    const esSinVoucher = ['Efectivo', 'Físico'].indexOf(tipoPago) !== -1;
+    const aviso = document.getElementById('avisoAprobar');
+
+    if (!tipoPago) { aviso.innerHTML = '<div class="alerta alerta-error">Indica el tipo de pago.</div>'; return; }
+    if (!monto || Number(monto) <= 0) { aviso.innerHTML = '<div class="alerta alerta-error">Ingresa la cantidad (monto).</div>'; return; }
+    if (!esSinVoucher && !nro) { aviso.innerHTML = '<div class="alerta alerta-error">Ingresa el número del voucher/transacción.</div>'; return; }
+
+    const btn = document.getElementById('btnConfirmarAprobar');
+    btn.disabled = true;
+    btn.textContent = 'Aprobando…';
+
+    const r = await apiLlamada('cambiarEstado', {
+      id: id,
+      grupoId: grupoId || '',
+      estado: 'aprobado',
+      montoVerificado: monto,
+      tipoPago: tipoPago,
+      numeroTransaccion: esSinVoucher ? '' : nro
+    });
+
+    aviso.innerHTML = '<div class="alerta ' + (r.ok ? 'alerta-ok' : 'alerta-error') + '">' + (r.mensaje || '') + '</div>';
+    if (r.ok) {
+      setTimeout(function () { CerrarModal(); pintar(); pintarResumenTop(); actualizarResumenSiVisible(); }, 700);
+    } else {
+      btn.disabled = false;
+      btn.textContent = 'Confirmar aprobación';
     }
   }
 
