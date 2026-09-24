@@ -52,7 +52,7 @@
     document.getElementById('f-vista').addEventListener('change', function () { estado.vista = this.value; estado.pagina = 1; pintar(); });
     document.getElementById('f-por-tipo').addEventListener('change', function () { estado.tipo = this.value; estado.pagina = 1; pintar(); });
     document.getElementById('f-busqueda').addEventListener('input', function () {
-      estado.busqueda = this.value;
+      estado.busqueda = this.value.replace(/\s+/g, ' ').trim();
       estado.pagina = 1;
       clearTimeout(timerBusqueda);
       timerBusqueda = setTimeout(pintar, 300);
@@ -106,6 +106,9 @@
 
     tb.innerHTML = r.inscripciones.map(function (i) {
       const chip = chips[i.estado.toLowerCase()] || 'chip-pendiente';
+      const anomalias = anomaliasInscripcion_(i);
+      const clsFila = anomalias.length ? ' fila-incoherente' : '';
+      const tituloFila = anomalias.length ? ' title="' + anomalias.join('; ') + '"' : '';
       const fecha = i.fecha ? new Date(i.fecha).toLocaleDateString('es-PE', { day: '2-digit', month: '2-digit' }) : '—';
       const nombre = (i.nombres || '') + ' ' + (i.apellidos || '');
       const tipoCelda = i.esGrupo

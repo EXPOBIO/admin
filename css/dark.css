@@ -90,6 +90,7 @@ html[data-tema="oscuro"] .tabla tbody tr:hover { background: #12330A; }
 html[data-tema="oscuro"] .chip-pendiente { background: #3A3016; color: var(--amber); }
 html[data-tema="oscuro"] .chip-aprobado { background: #1E600B; color: #B8E89A; }
 html[data-tema="oscuro"] .chip-rechazado { background: #3A1620; color: var(--rojo); }
+html[data-tema="oscuro"] .chip-curso { background: #14304A; color: #8FB8E8; }
 
 html[data-tema="oscuro"] .modal-caja {
   background: var(--blanco);
@@ -129,6 +130,7 @@ html[data-tema="oscuro"] .mini-resumen .mini-numero { color: var(--texto); }
 html[data-tema="oscuro"] .mini-resumen.minigrupo .mini-numero { color: var(--amber); }
 html[data-tema="oscuro"] .mini-resumen.mini-rechazado .mini-numero { color: var(--rojo); }
 html[data-tema="oscuro"] .mini-resumen.miniaprobado .mini-numero { color: #9BE89A; }
+html[data-tema="oscuro"] .mini-resumen.minicurso .mini-numero { color: #8FB8E8; }
 
 html[data-tema="oscuro"] .chip-resumen {
   background: #1E600B;

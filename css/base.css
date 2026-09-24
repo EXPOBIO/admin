@@ -150,6 +150,7 @@ button { font-family: inherit; cursor: pointer; }
 .chip-pendiente  { background: #FDF3DD; color: var(--amber); }
 .chip-aprobado   { background: var(--verde-claro); color: var(--verde-oscuro); }
 .chip-rechazado  { background: #FBEAE8; color: var(--rojo); }
+.chip-curso      { background: #E3ECF7; color: #2F5B8A; }
 
 /* ===== Modal ===== */
 .modal-fondo {
