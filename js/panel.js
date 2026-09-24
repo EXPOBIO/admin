@@ -18,6 +18,7 @@ document.addEventListener('DOMContentLoaded', function () {
     { nombre: 'resumen', obj: window.SeccionResumen },
     { nombre: 'inscripciones', obj: window.SeccionInscripciones },
     { nombre: 'tareas', obj: window.SeccionTareas },
+    { nombre: 'actas', obj: window.SeccionActas },
     { nombre: 'organizadores', obj: window.SeccionOrganizadores },
     { nombre: 'gestores', obj: window.SeccionGestores }
   ];

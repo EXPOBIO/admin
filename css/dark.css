@@ -140,6 +140,11 @@ html[data-tema="oscuro"] .chip-resumen {
 html[data-tema="oscuro"] .gestor-fila { border-bottom-color: var(--borde); }
 html[data-tema="oscuro"] .gestor-info .extra { color: var(--gris); }
 
+html[data-tema="oscuro"] .tarea-comentario,
+html[data-tema="oscuro"] .tarea-id,
+html[data-tema="oscuro"] .acta-responsable { color: var(--gris); }
+html[data-tema="oscuro"] .archivo-link { background: #1E600B; color: #B8E89A; }
+
 html[data-tema="oscuro"] .login-card {
   background: var(--blanco);
   box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5);
