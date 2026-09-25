@@ -6,6 +6,32 @@
 
   const esc = function (s) { return String(s == null ? '' : s).replace(/[&<>"']/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]; }); };
 
+  // Devuelve las anomalías de una fila para marcarla como "incoherente"
+  // (resaltado + tooltip). Nunca debe lanzar: solo suma avisos claros.
+  function anomaliasInscripcion_(i) {
+    const a = [];
+    if (!i) return a;
+    const estado = String(i.estado || '').toLowerCase();
+    const tipo = String(i.tipo || '');
+    const dni = String(i.dni || '');
+
+    if (i.esGrupo && i.cantidad && i.cantidad !== 10) {
+      a.push('grupo con ' + i.cantidad + ' integrantes (deben ser 10)');
+    }
+    if (dni && !/^\d{8}$/.test(dni)) a.push('DNI inválido');
+    if (tipo === 'Estudiante' && !String(i.codigo || '').trim()) a.push('sin código de estudiante');
+    // Los pagos solo se revisan en filas que traen datos de pago (aprobadas).
+    // En vista "Todos", los miembros de un grupo no traen esos campos.
+    if (estado === 'aprobado' && i.monto !== undefined) {
+      const medio = String(i.tipoPago || '').toLowerCase();
+      const sinVoucher = medio === 'efectivo' || medio === 'físico' || medio === 'fisico';
+      if (Number(i.monto) <= 0) a.push('sin monto verificado');
+      if (!i.tipoPago) a.push('sin tipo de pago');
+      if (!i.transaccion && !sinVoucher) a.push('sin n.º de transacción');
+    }
+    return a;
+  }
+
   async function cargar() {
     const cont = document.getElementById('seccion-inscripciones');
     cont.innerHTML =
