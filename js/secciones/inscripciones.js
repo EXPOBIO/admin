@@ -6,6 +6,24 @@
 
   const esc = function (s) { return String(s == null ? '' : s).replace(/[&<>"']/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]; }); };
 
+  // ¿El registro es un cobro real? Si el admin anotó otra cosa (entrada
+  // ganada, curso, "libre"…) no exigimos monto ni n.º de operación.
+  function esCobro_(medio, nro) {
+    const m = String(medio || '').trim().toLowerCase();
+    const t = String(nro || '').trim().toLowerCase();
+    if (!m) return false;
+    if (t === 'libre') return false;
+    if (/(ganad|gratuit|libre|invitad|entrada|curso|becad)/.test(m)) return false;
+    return ['yape', 'plin', 'bcp', 'transfer', 'efectivo', 'físic', 'fisic', 'otro'].some(function (k) {
+      return m.indexOf(k) !== -1;
+    });
+  }
+
+  // Medios pagados en taquilla: no llevan n.º de operación.
+  function esSinNro_(medio) {
+    return /^(efectivo|f[ií]sico)\b/i.test(String(medio || '').trim());
+  }
+
   // Devuelve las anomalías de una fila para marcarla como "incoherente"
   // (resaltado + tooltip). Nunca debe lanzar: solo suma avisos claros.
   function anomaliasInscripcion_(i) {
@@ -25,9 +43,12 @@
     if (estado === 'aprobado' && i.monto !== undefined) {
       const medio = String(i.tipoPago || '').toLowerCase();
       const sinVoucher = medio === 'efectivo' || medio === 'físico' || medio === 'fisico';
-      if (Number(i.monto) <= 0) a.push('sin monto verificado');
-      if (!i.tipoPago) a.push('sin tipo de pago');
-      if (!i.transaccion && !sinVoucher) a.push('sin n.º de transacción');
+      if (!i.tipoPago) {
+        a.push('sin tipo de pago');
+      } else if (esCobro_(medio, i.transaccion)) {
+        if (Number(i.monto) <= 0) a.push('sin monto verificado');
+        if (!i.transaccion && !sinVoucher) a.push('sin n.º de transacción');
+      }
     }
     return a;
   }
@@ -196,9 +217,9 @@
 
   // ---------- Modal de detalle ----------
 
-  function htmlVoucher(url, b64) {
+  function htmlVoucher(url, b64, titulo) {
     const u = String(url || '').trim();
-    if (!u) return '<div class="alerta alerta-error">Sin voucher registrado.</div>';
+    if (!u) return '';
     const esImagen = b64 && b64.mimeType && b64.mimeType.indexOf('image/') === 0;
     const medio = esImagen
       ? '<img class="voucher-img" src="data:' + b64.mimeType + ';base64,' + b64.base64 + '" alt="Voucher">'
@@ -207,9 +228,10 @@
           : '<div class="alerta alerta-ok">Voucher guardado en Drive (celda con enlace).</div>');
     const barra =
       '<div class="voucher-toolbar">' +
-        (b64 && b64.nombre ? '<span class="voucher-nombre">' + esc(b64.nombre) + '</span>' : '') +
+        (b64 && b64.nombre ? '<span class="voucher-nombre">' + esc(b64.nombre) + '</span>' : (titulo ? '<span class="voucher-nombre">' + esc(titulo) + '</span>' : '')) +
         '<a class="btn-secundario btn-chico" href="' + u + '" target="_blank" rel="noopener">Abrir en Drive</a>' +
         (b64 ? '<a class="btn-secundario btn-chico" data-voucher-desc>Descargar</a>' : '') +
+        '<button class="btn-peligro btn-chico" data-borrar-voucher="' + esc(titulo || 'Voucher') + '">Borrar</button>' +
       '</div>';
     return '<div class="voucher-caja">' + medio + barra + '</div>';
   }
@@ -221,7 +243,8 @@
 
     const i = r.inscripcion;
     const modal = document.getElementById('modal');
-    const voucher = htmlVoucher(i.Voucher, r.voucherBase64);
+    const voucher = htmlVoucher(i.Voucher, r.voucherBase64, "Voucher");
+    const voucher2 = htmlVoucher(i.Voucher2 || i.voucher2 || "", r.voucher2Base64, "Voucher2");
 
     const campos = [
       ['Nombres', i.Nombres], ['Apellidos', (i['Apellido paterno'] || '') + ' ' + (i['Apellido materno'] || '')],
@@ -262,7 +285,7 @@
           '<button class="modal-cerrar" onclick="CerrarModal()">×</button>' +
         '</div>' +
 
-        voucher +
+        (voucher||"") + (voucher2||"") +
         cajaMiembros +
 
         '<div class="detalle-grid">' +
@@ -275,6 +298,7 @@
             '<button class="btn-peligro" id="btnRechazar">Rechazar</button>' +
             verGrupo +
             '<button class="btn-peligro" id="btnEliminar">Eliminar</button>' +
+            (i.ID ? '<button class="btn-secundario" id="btnSubirV2">Subir 2.º comprobante</button>' : '') +
             (i.ID ? '<button class="btn-secundario" id="btnEditar">Editar datos</button>' : '') +
           '</div>' +
         '</div>' +
@@ -417,19 +441,23 @@
       '<div class="modal-caja">' +
         '<div class="modal-titulo"><span>Aprobar inscripción</span>' +
           '<button class="modal-cerrar" onclick="CerrarModal()">×</button></div>' +
-        '<p class="seccion-sub">Confirma el pago para aprobar la inscripción.</p>' +
+        '<p class="seccion-sub">Confirma el pago o registra la entrada ganada para aprobar.</p>' +
         '<div class="detalle-grid">' +
-          '<label class="campo"><span>Tipo de pago *</span><select id="ap-pago">' +
-            '<option value="">Selecciona…</option>' +
-            '<option value="Yape">Yape</option>' +
-            '<option value="Plin">Plin</option>' +
-            '<option value="BCP">BCP</option>' +
-            '<option value="Transferencia Bancaria">Transferencia Bancaria</option>' +
-            '<option value="Efectivo">Efectivo</option>' +
-            '<option value="Físico">Físico</option>' +
-            '<option value="Otro">Otro</option></select></label>' +
-          '<label class="campo"><span>Cantidad (S/.) *</span><input type="number" step="0.10" min="0" id="ap-monto" placeholder="Ej. 25.00"></label>' +
-          '<label class="campo" id="w-ap-nro" style="grid-column:1/-1"><span>N° de voucher / transacción *</span><input id="ap-nro" placeholder="Ej. 2309f7a4…"></label>' +
+          '<label class="campo" style="grid-column:1/-1"><span>Tipo de pago *</span>' +
+            '<input id="ap-pago" list="ap-pago-list" autocomplete="off" ' +
+            'placeholder="Yape, Efectivo… o anota la entrada ganada / curso">' +
+            '<datalist id="ap-pago-list">' +
+              '<option value="Yape"></option>' +
+              '<option value="Plin"></option>' +
+              '<option value="BCP"></option>' +
+              '<option value="Transferencia Bancaria"></option>' +
+              '<option value="Efectivo"></option>' +
+              '<option value="Físico"></option>' +
+              '<option value="Entrada ganada"></option>' +
+              '<option value="Libre"></option>' +
+            '</datalist></label>' +
+          '<label class="campo"><span>Cantidad (S/.)</span><input type="number" step="0.10" min="0" id="ap-monto" placeholder="0 si no paga"></label>' +
+          '<label class="campo" id="w-ap-nro"><span>N° de voucher / transacción</span><input id="ap-nro" placeholder="N.º de operación o «Libre»"></label>' +
         '</div>' +
         '<div id="avisoAprobar"></div>' +
         '<div class="barra-acciones" style="justify-content:flex-end">' +
@@ -438,10 +466,6 @@
         '</div>' +
       '</div>';
 
-    document.getElementById('ap-pago').addEventListener('change', function () {
-      const esSinVoucher = ['Efectivo', 'Físico'].indexOf(this.value) !== -1;
-      document.getElementById('w-ap-nro').style.display = esSinVoucher ? 'none' : '';
-    });
     document.getElementById('btnConfirmarAprobar').addEventListener('click', function () {
       confirmarAprobar(id, grupoId);
     });
@@ -450,15 +474,15 @@
 
   async function confirmarAprobar(id, grupoId) {
     const g = document.getElementById.bind(document);
-    const tipoPago = g('ap-pago').value;
+    const tipoPago = g('ap-pago').value.trim();
     const monto = g('ap-monto').value.trim();
     const nro = g('ap-nro').value.trim();
-    const esSinVoucher = ['Efectivo', 'Físico'].indexOf(tipoPago) !== -1;
+    const esSinVoucher = ['Efectivo', 'Físico', 'Fisico'].indexOf(tipoPago) !== -1;
     const aviso = document.getElementById('avisoAprobar');
 
     if (!tipoPago) { aviso.innerHTML = '<div class="alerta alerta-error">Indica el tipo de pago.</div>'; return; }
-    if (!monto || Number(monto) <= 0) { aviso.innerHTML = '<div class="alerta alerta-error">Ingresa la cantidad (monto).</div>'; return; }
-    if (!esSinVoucher && !nro) { aviso.innerHTML = '<div class="alerta alerta-error">Ingresa el número del voucher/transacción.</div>'; return; }
+    if (tipoPago.length > 80) { aviso.innerHTML = '<div class="alerta alerta-error">El tipo de pago es demasiado largo.</div>'; return; }
+    if (monto && Number(monto) < 0) { aviso.innerHTML = '<div class="alerta alerta-error">El monto no puede ser negativo.</div>'; return; }
 
     const btn = document.getElementById('btnConfirmarAprobar');
     btn.disabled = true;
@@ -468,7 +492,7 @@
       id: id,
       grupoId: grupoId || '',
       estado: 'aprobado',
-      montoVerificado: monto,
+      montoVerificado: monto || '0',
       tipoPago: tipoPago,
       numeroTransaccion: esSinVoucher ? '' : nro
     });
@@ -544,14 +568,20 @@
           '</div>' +
 
           '<label class="campo"><span>Monto recibido (S/.)</span><input type="number" step="0.10" min="0" id="m-monto"></label>' +
-          '<label class="campo"><span>Tipo de pago</span><select id="m-pago">' +
-            '<option value="Yape">Yape</option>' +
-            '<option value="Plin">Plin</option>' +
-            '<option value="BCP">BCP</option>' +
-            '<option value="Transferencia Bancaria">Transferencia Bancaria</option>' +
-            '<option value="Efectivo">Efectivo</option>' +
-            '<option value="Otro">Otro</option></select></label>' +
-          '<label class="campo" id="w-m-nro"><span>N° transacción</span><input id="m-nro" placeholder="Últimos dígitos de la operación"></label>' +
+          '<label class="campo"><span>Tipo de pago</span>' +
+            '<input id="m-pago" list="m-pago-list" autocomplete="off" ' +
+            'placeholder="Yape, Efectivo… o anota la entrada ganada / curso">' +
+            '<datalist id="m-pago-list">' +
+              '<option value="Yape"></option>' +
+              '<option value="Plin"></option>' +
+              '<option value="BCP"></option>' +
+              '<option value="Transferencia Bancaria"></option>' +
+              '<option value="Efectivo"></option>' +
+              '<option value="Físico"></option>' +
+              '<option value="Entrada ganada"></option>' +
+              '<option value="Libre"></option>' +
+            '</datalist></label>' +
+          '<label class="campo" id="w-m-nro"><span>N° transacción</span><input id="m-nro" placeholder="N.º de operación o «Libre»"></label>' +
           '<label class="campo" style="grid-column:1/-1"><span>Voucher (imagen o PDF)</span><input type="file" id="m-voucher" accept="image/*,application/pdf"></label>' +
         '</div>' +
         '<div id="avisoNuevo"></div>' +
@@ -565,15 +595,15 @@
     aplicarTipo('Estudiante');
 
     document.getElementById('m-tipo').addEventListener('change', function () { aplicarTipo(this.value); });
-    document.getElementById('m-pago').addEventListener('change', aplicarPagoNuevo);
+    document.getElementById('m-pago').addEventListener('input', aplicarPagoNuevo);
     aplicarPagoNuevo();
     document.getElementById('btnGuardarNuevo').addEventListener('click', guardarNuevaInscripcion);
     modal.classList.remove('oculto');
   }
 
   function aplicarPagoNuevo() {
-    const esEfectivo = document.getElementById('m-pago').value === 'Efectivo';
-    document.getElementById('w-m-nro').style.display = esEfectivo ? 'none' : '';
+    const sinNro = esSinNro_(document.getElementById('m-pago').value);
+    document.getElementById('w-m-nro').style.display = sinNro ? 'none' : '';
   }
 
   function aplicarTipo(t) {
@@ -625,11 +655,11 @@
       catch (e) { return notificar('No se pudo leer el voucher.'); }
     }
 
-    const esEfectivo = g('m-pago').value === 'Efectivo';
+    const esEfectivo = esSinNro_(g('m-pago').value);
     const base = {
       tipo: tipo,
       montoVerificado: g('m-monto').value.trim(),
-      tipoPago: g('m-pago').value,
+      tipoPago: g('m-pago').value.trim(),
       numeroTransaccion: esEfectivo ? '' : g('m-nro').value.trim(),
       voucher: voucherBase64
     };
